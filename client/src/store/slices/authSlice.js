@@ -60,5 +60,33 @@ const authSlice = createSlice({
   },
 });
 
+export const registerUser = createAsyncThunk(
+  "auth/register",
+  async (formData, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/register", formData);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data.message);
+    }
+  },
+);
+
+// Tambahkan extraReducers untuk registerUser
+authSlice.extraReducers = (builder) => {
+  builder
+    .addCase(registerUser.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(registerUser.fulfilled, (state) => {
+      state.loading = false;
+    })
+    .addCase(registerUser.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
+};
+
 export const { logout, setUser } = authSlice.actions;
 export default authSlice.reducer;

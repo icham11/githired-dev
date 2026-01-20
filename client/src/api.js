@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Bikin Instance Axios (Biar gak setting ulang terus)
 const api = axios.create({
-  baseURL: "http://localhost:3000", // Alamat Server Backend kita
+  baseURL: "http://localhost:3001", // Alamat Server Backend kita
   headers: {
     "Content-Type": "application/json",
   },
