@@ -17,7 +17,7 @@ module.exports = {
     dialect: "postgres",
   },
   production: {
-    use_env_variable: "DATABASE_URL", // <--- INI KUNCINYA
+    use_env_variable: "DATABASE_URL", // <--- INI
     dialect: "postgres",
     dialectOptions: {
       ssl: {

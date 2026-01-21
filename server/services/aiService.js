@@ -169,7 +169,6 @@ const analyzeResume = async (resumeText) => {
   } catch (error) {
     console.error("Resume AI Error:", error);
     if (error.status === 429 || error.message.includes("429")) {
-      // Simple retry for resume? Or just fail gracefully.
       return {
         score: 0,
         feedback: "Server is busy. Please try again in a few seconds.",
