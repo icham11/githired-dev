@@ -1,37 +1,24 @@
-const Sequelize = require("sequelize");
-const config = require("../config/database.js");
+const sequelize = require("../config/database");
+const User = require("./User");
+const ResumeAnalysis = require("./ResumeAnalysis");
+const InterviewSession = require("./InterviewSession");
 
-const env = process.env.NODE_ENV || "development";
-const dbConfig = config[env];
+const Transaction = require("./Transaction");
 
-const db = {};
+// Associations
+User.hasMany(ResumeAnalysis, { foreignKey: "userId" });
+ResumeAnalysis.belongsTo(User, { foreignKey: "userId" });
 
-let sequelize;
-if (dbConfig.use_env_variable) {
-  sequelize = new Sequelize(process.env[dbConfig.use_env_variable], dbConfig);
-} else {
-  sequelize = new Sequelize(
-    dbConfig.database,
-    dbConfig.username,
-    dbConfig.password,
-    dbConfig,
-  );
-}
+User.hasMany(InterviewSession, { foreignKey: "userId" });
+InterviewSession.belongsTo(User, { foreignKey: "userId" });
 
-db.Sequelize = Sequelize;
-db.sequelize = sequelize;
+User.hasMany(Transaction, { foreignKey: "userId" });
+Transaction.belongsTo(User, { foreignKey: "userId" });
 
-db.User = require("./User")(sequelize);
-db.InterviewSession = require("./InterviewSession")(sequelize);
-db.Transaction = require("./Transaction")(sequelize);
-db.ResumeAnalysis = require("./ResumeAnalysis")(sequelize);
-
-// Define associations
-db.User.hasMany(db.InterviewSession, { foreignKey: "userId" });
-db.InterviewSession.belongsTo(db.User, { foreignKey: "userId" });
-db.User.hasMany(db.Transaction, { foreignKey: "userId" });
-db.Transaction.belongsTo(db.User, { foreignKey: "userId" });
-db.User.hasMany(db.ResumeAnalysis, { foreignKey: "userId" });
-db.ResumeAnalysis.belongsTo(db.User, { foreignKey: "userId" });
-
-module.exports = db;
+module.exports = {
+  sequelize,
+  User,
+  ResumeAnalysis,
+  InterviewSession,
+  Transaction,
+};
