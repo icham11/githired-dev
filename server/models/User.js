@@ -31,10 +31,6 @@ const User = sequelize.define("User", {
     type: DataTypes.STRING,
     defaultValue: "student",
   },
-  isPro: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
-  },
 });
 
 module.exports = User;
