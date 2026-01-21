@@ -1,37 +1,27 @@
-const { Model, DataTypes } = require("sequelize");
+const { DataTypes } = require("sequelize");
+const sequelize = require("../config/database");
 
-module.exports = (sequelize) => {
-  class Transaction extends Model {}
+const Transaction = sequelize.define("Transaction", {
+  orderId: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+  },
+  amount: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  status: {
+    type: DataTypes.STRING, // 'pending', 'success', 'failed'
+    defaultValue: "pending",
+  },
+  snapToken: {
+    type: DataTypes.STRING,
+  },
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+});
 
-  Transaction.init(
-    {
-      orderId: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-      },
-      amount: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      status: {
-        type: DataTypes.STRING,
-        defaultValue: "pending",
-      },
-      snapToken: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      userId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-    },
-    {
-      sequelize,
-      modelName: "Transaction",
-    },
-  );
-
-  return Transaction;
-};
+module.exports = Transaction;

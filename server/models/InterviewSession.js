@@ -1,44 +1,31 @@
-const { Model, DataTypes } = require("sequelize");
+const { DataTypes } = require("sequelize");
+const sequelize = require("../config/database");
 
-module.exports = (sequelize) => {
-  class InterviewSession extends Model {}
+const InterviewSession = sequelize.define("InterviewSession", {
+  role: {
+    type: DataTypes.STRING,
+    defaultValue: "General Software Engineer",
+  },
+  difficulty: {
+    type: DataTypes.STRING, // 'Normal', 'Expert', 'Extreme'
+    defaultValue: "Normal",
+  },
+  chatHistory: {
+    type: DataTypes.TEXT, // Stored as JSON string
+    defaultValue: "[]",
+  },
+  language: {
+    type: DataTypes.STRING, // 'English', 'Indonesian'
+    defaultValue: "English",
+  },
+  score: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  feedback: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+});
 
-  InterviewSession.init(
-    {
-      userId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      role: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      difficulty: {
-        type: DataTypes.STRING,
-        defaultValue: "Junior",
-      },
-      language: {
-        type: DataTypes.STRING,
-        defaultValue: "English",
-      },
-      chatHistory: {
-        type: DataTypes.TEXT,
-        defaultValue: "[]",
-      },
-      score: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
-      },
-      feedback: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
-    },
-    {
-      sequelize,
-      modelName: "InterviewSession",
-    },
-  );
-
-  return InterviewSession;
-};
+module.exports = InterviewSession;

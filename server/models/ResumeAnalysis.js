@@ -1,40 +1,31 @@
-const { DataTypes, Model } = require("sequelize");
+const { DataTypes } = require("sequelize");
+const sequelize = require("../config/database");
 
-module.exports = (sequelize) => {
-  class ResumeAnalysis extends Model {}
+const ResumeAnalysis = sequelize.define("ResumeAnalysis", {
+  content: {
+    type: DataTypes.TEXT, // Extracted text from PDF
+    allowNull: false,
+  },
+  score: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  feedback_en: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  feedback_id: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  feedback: {
+    type: DataTypes.TEXT, // Kept for legacy/default
+    allowNull: true,
+  },
+  fileUrl: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+});
 
-  ResumeAnalysis.init(
-    {
-      content: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-      },
-      score: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      feedback_en: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-      },
-      feedback_id: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-      },
-      feedback: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-      },
-      fileUrl: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-    },
-    {
-      sequelize,
-      modelName: "ResumeAnalysis",
-    },
-  );
-
-  return ResumeAnalysis;
-};
+module.exports = ResumeAnalysis;
