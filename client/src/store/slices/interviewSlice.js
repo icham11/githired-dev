@@ -1,83 +1,184 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api";
 
-// --- Async Thunks ---
-
-// 1. Start Interview
-export const startSession = createAsyncThunk(
-  "interview/start",
-  async ({ role, difficulty }, { rejectWithValue }) => {
+// Async Thunk to Start Interview
+export const startInterview = createAsyncThunk(
+  "interview/startInterview",
+  async ({ role, difficulty, language }, { rejectWithValue }) => {
     try {
-      const response = await api.post("/interviews", { role, difficulty });
-      return response.data; // Mengembalikan object session
-    } catch (error) {
-      return rejectWithValue(error.response.data.message);
-    }
-  },
-);
-
-// 2. Kirim Chat
-export const sendChat = createAsyncThunk(
-  "interview/chat",
-  async ({ sessionId, userMessage }, { rejectWithValue }) => {
-    try {
-      const response = await api.post("/interviews/chat", {
-        sessionId,
-        userMessage,
+      const response = await api.post("/interview/start", {
+        role,
+        difficulty,
+        language,
       });
-      return response.data; // { aiResponse, history }
+      return response.data; // { id, role, difficulty, chatHistory... }
     } catch (error) {
-      return rejectWithValue(error.response.data.message);
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to start interview",
+      );
     }
   },
 );
 
-const initialState = {
-  activeSession: null, // Sesi yang sedang berlangsung
-  chatHistory: [], // Array chat untuk ditampilkan di layar
-  loading: false,
-  error: null,
-};
+// Async Thunk to Send Message
+export const sendMessage = createAsyncThunk(
+  "interview/sendMessage",
+  async ({ sessionId, message }, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/interview/chat", {
+        sessionId,
+        message,
+      });
+      return response.data; // { response: "AI feedback...", history: [...] }
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to send message",
+      );
+    }
+  },
+);
+
+// Async Thunk to Fetch Session (Rehydration)
+export const fetchSession = createAsyncThunk(
+  "interview/fetchSession",
+  async (sessionId, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/interview/${sessionId}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch session",
+      );
+    }
+  },
+);
+
+// Async Thunk to End Interview
+export const endInterview = createAsyncThunk(
+  "interview/endInterview",
+  async (sessionId, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/interview/end", { sessionId });
+      return response.data; // { id, score, feedback, ... }
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to end session",
+      );
+    }
+  },
+);
 
 const interviewSlice = createSlice({
   name: "interview",
-  initialState,
+  initialState: {
+    sessionId: null,
+    messages: [], // Array of { role: 'user'|'assistant', content: string }
+    loading: false,
+    error: null,
+    settings: { role: "", difficulty: "", language: "" },
+    result: null, // { score, feedback }
+  },
   reducers: {
-    clearSession: (state) => {
-      state.activeSession = null;
-      state.chatHistory = [];
+    clearInterview: (state) => {
+      state.sessionId = null;
+      state.messages = [];
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      // Start Session
-      .addCase(startSession.pending, (state) => {
+      // Start Interview
+      .addCase(startInterview.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
-      .addCase(startSession.fulfilled, (state, action) => {
+      .addCase(startInterview.fulfilled, (state, action) => {
         state.loading = false;
-        state.activeSession = action.payload; // Simpan data sesi
-        state.chatHistory = []; // Reset chat
+        state.sessionId = action.payload.id;
+        state.settings = {
+          role: action.payload.role,
+          difficulty: action.payload.difficulty,
+          language: action.payload.language,
+        };
+        // Parse history if it comes as string, though usually backend sends valid JSON object with sequelize
+        // But our `chatHistory` in DB is TEXT. Backend controller creates it with "[]".
+        // Let's safe parse usually.
+        let history = [];
+        try {
+          history =
+            typeof action.payload.chatHistory === "string"
+              ? JSON.parse(action.payload.chatHistory)
+              : action.payload.chatHistory;
+        } catch (e) {}
+        state.messages = history;
       })
-      // Send Chat
-      .addCase(sendChat.pending, (state) => {
-        // Note: Kita bisa bikin logic "optimistic UI" di sini nanti
+      .addCase(startInterview.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Send Message
+      .addCase(sendMessage.pending, (state) => {
         state.loading = true;
+        // Optimistically add user message? maybe. Let's wait for now.
       })
-      .addCase(sendChat.fulfilled, (state, action) => {
+      .addCase(sendMessage.fulfilled, (state, action) => {
         state.loading = false;
-        // Update history dengan respon terbaru dari server
-        state.chatHistory = action.payload.history;
+        // Backend returns: { response: "string" }
+        // We need to append the NEW exchange to our local state
+        // The thunk arg had the 'message' (user)
+        const userMsg = action.meta.arg.message;
+        const aiMsg = action.payload.response;
+        const isCorrect = action.payload.isCorrect;
 
-        // Update score kalau ada di masa depan
-        // state.activeSession.score = action.payload.score;
+        state.messages.push({ role: "user", content: userMsg });
+        state.messages.push({ role: "assistant", content: aiMsg, isCorrect });
       })
-      .addCase(sendChat.rejected, (state, action) => {
+      .addCase(sendMessage.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Fetch Session
+      .addCase(fetchSession.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchSession.fulfilled, (state, action) => {
+        state.loading = false;
+        state.sessionId = action.payload.id;
+        state.settings = {
+          role: action.payload.role,
+          difficulty: action.payload.difficulty,
+          language: action.payload.language,
+        };
+        let history = [];
+        try {
+          history =
+            typeof action.payload.chatHistory === "string"
+              ? JSON.parse(action.payload.chatHistory)
+              : action.payload.chatHistory;
+        } catch (e) {}
+        state.messages = history;
+      })
+      .addCase(fetchSession.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // End Interview
+      .addCase(endInterview.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(endInterview.fulfilled, (state, action) => {
+        state.loading = false;
+        state.result = {
+          score: action.payload.score,
+          feedback: action.payload.feedback,
+        };
+      })
+      .addCase(endInterview.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
   },
 });
 
-export const { clearSession } = interviewSlice.actions;
+export const { clearInterview } = interviewSlice.actions;
 export default interviewSlice.reducer;

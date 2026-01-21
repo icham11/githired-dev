@@ -1,26 +1,14 @@
-const dotenv = require("dotenv");
-dotenv.config();
+// Contoh logika yang benar (Production Ready)
 
-module.exports = {
-  development: {
-    username: process.env.DB_USERNAME || "postgres",
-    password: process.env.DB_PASSWORD || "postgres",
-    database: process.env.DB_NAME || "githired_development",
-    host: process.env.DB_HOST || "127.0.0.1",
-    dialect: "postgres",
+const { Sequelize } = require("sequelize");
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
+  dialect: "postgres",
+  protocol: "postgres",
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false, // Wajib untuk Heroku
+    },
   },
-  test: {
-    username: process.env.DB_USERNAME || "postgres",
-    password: process.env.DB_PASSWORD || "postgres",
-    database: process.env.DB_NAME || "githired_test",
-    host: process.env.DB_HOST || "127.0.0.1",
-    dialect: "postgres",
-  },
-  production: {
-    username: process.env.DB_USERNAME || "postgres",
-    password: process.env.DB_PASSWORD || "postgres",
-    database: process.env.DB_NAME || "githired_production",
-    host: process.env.DB_HOST || "127.0.0.1",
-    dialect: "postgres",
-  },
-};
+});
+module.exports = sequelize;

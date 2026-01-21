@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "../store/slices/authSlice";
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
@@ -73,6 +73,12 @@ export default function RegisterPage() {
         >
           {loading ? "Registering..." : "Register"}
         </button>
+        <p className="mt-4 text-center text-sm text-gray-400">
+          Already have an account?{" "}
+          <Link to="/login" className="text-blue-500 hover:underline">
+            Login
+          </Link>
+        </p>
       </form>
     </div>
   );
