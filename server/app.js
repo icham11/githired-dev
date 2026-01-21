@@ -1,32 +1,50 @@
 const express = require("express");
 const cors = require("cors");
+const dotenv = require("dotenv");
+const { sequelize } = require("./models");
+
+dotenv.config();
+
 const app = express();
-const db = require("./models");
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 
-const router = require("./routes");
-
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(router);
+// Routes
+const authRoutes = require("./routes/authRoutes");
 
-// Test route
+const interviewRoutes = require("./routes/interviewRoutes");
+const errorHandler = require("./middlewares/errorHandler");
+require("./config/passport");
+
+app.use("/auth", authRoutes);
+
+app.use("/interview", interviewRoutes);
+app.use("/user", require("./routes/userRoutes"));
+app.use("/payment", require("./routes/paymentRoutes"));
+
+app.use(errorHandler);
+
+// Basic Route
 app.get("/", (req, res) => {
-  res.send("GitHired Server is Running 🚀");
+  res.send("CareerForge AI Server is running");
 });
 
-db.sequelize
-  .sync({ force: false, alter: true })
-  .then(() => {
-    console.log("Database synchronized successfully");
+// Database Sync and Start Server
+(async () => {
+  try {
+    await sequelize.authenticate();
+    console.log("Database connected successfully.");
+    await sequelize.sync({ alter: true });
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
-  })
-  .catch((err) => {
-    console.error("Error synchronizing database:", err);
-  });
+  } catch (error) {
+    console.error("Unable to connect to the database:", error);
+  }
+})();
 
 module.exports = app;
