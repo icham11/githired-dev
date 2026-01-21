@@ -31,7 +31,7 @@ app.use(errorHandler);
 
 // Basic Route
 app.get("/", (req, res) => {
-  res.send("CareerForge AI Server is running");
+  res.send("GitHired AI Server is running");
 });
 
 // Database Sync and Start Server
