@@ -9,7 +9,7 @@ const errorHandler = (err, req, res, next) => {
   }
   if (err.name === "SequelizeUniqueConstraintError") {
     return res.status(400).json({
-      message: "Unique Constraint Error",
+      message: "Validation Error",
       errors: err.errors.map((e) => e.message),
     });
   }

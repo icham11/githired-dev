@@ -15,13 +15,13 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 const authRoutes = require("./routes/authRoutes");
-
+const resumeRoutes = require("./routes/resumeRoutes");
 const interviewRoutes = require("./routes/interviewRoutes");
 const errorHandler = require("./middlewares/errorHandler");
 require("./config/passport");
 
 app.use("/auth", authRoutes);
-
+app.use("/resume", resumeRoutes);
 app.use("/interview", interviewRoutes);
 app.use("/user", require("./routes/userRoutes"));
 app.use("/payment", require("./routes/paymentRoutes"));

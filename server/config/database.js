@@ -7,7 +7,7 @@ module.exports = {
     password: process.env.DB_PASSWORD || "postgres",
     database: process.env.DB_NAME || "githired_development",
     host: process.env.DB_HOST || "127.0.0.1",
-    dialect: "postgres", // or 'mysql', 'sqlite', etc.
+    dialect: "postgres",
   },
   test: {
     username: process.env.DB_USERNAME || "postgres",
