@@ -35,10 +35,6 @@ const User = sequelize.define(
       type: DataTypes.STRING,
       defaultValue: "student",
     },
-    isPro: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
   },
   {
     hooks: {
