@@ -7,14 +7,13 @@ const {
 const startSession = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id);
+    console.log("🚀 ~ startSession ~ user:", user);
 
-    // Feature Gate: Free users max 1 session
     if (!user.isPro) {
       const sessionCount = await InterviewSession.count({
         where: { userId: user.id },
       });
       if (sessionCount >= 1) {
-        // Limit to 1
         return res.status(403).json({
           message:
             "Free Limit Reached. Max 1 Interview Session. Upgrade to Pro for unlimited access.",
@@ -28,7 +27,7 @@ const startSession = async (req, res) => {
       role: role || "General Software Engineer",
       difficulty: difficulty || "Normal",
       language: language || "English",
-      chatHistory: "[]", // Initialize empty array
+      chatHistory: "[]",
     });
 
     res.status(201).json(session);

@@ -4,19 +4,19 @@ const { User } = require("../models");
 
 const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { username, email, password } = req.body;
 
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ message: "Email already exists" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await User.create({
-      name,
+      username,
       email,
-      password: hashedPassword,
+      password,
     });
+    console.log("🚀 ~ register ~ newUser:", newUser);
 
     const token = jwt.sign(
       { id: newUser.id, email: newUser.email },
@@ -29,10 +29,15 @@ const register = async (req, res) => {
     res.status(201).json({
       message: "User registered successfully",
       token,
-      user: { id: newUser.id, name: newUser.name, email: newUser.email },
+      user: {
+        id: newUser.id,
+        username: newUser.username,
+        email: newUser.email,
+      },
     });
   } catch (error) {
     console.error(error);
+    console.log("🚀 ~ register ~ error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -42,11 +47,15 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ where: { email } });
+
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
+
+    console.log("🚀 ~ login ~ isMatch:", isMatch);
+
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
@@ -62,9 +71,10 @@ const login = async (req, res) => {
     res.json({
       message: "Login successful",
       token,
-      user: { id: user.id, name: user.name, email: user.email },
+      user: { id: user.id, username: user.username, email: user.email },
     });
   } catch (error) {
+    console.log("🚀 ~ login ~ error:", error);
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }

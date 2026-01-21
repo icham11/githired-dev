@@ -19,7 +19,7 @@ module.exports = (sequelize) => {
       },
       language: {
         type: DataTypes.STRING,
-        defaultValue: "Indonesian",
+        defaultValue: "English",
       },
       chatHistory: {
         type: DataTypes.TEXT,
@@ -31,6 +31,7 @@ module.exports = (sequelize) => {
       },
       feedback: {
         type: DataTypes.TEXT,
+        allowNull: true,
       },
     },
     {

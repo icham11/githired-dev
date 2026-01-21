@@ -3,7 +3,7 @@ const { User, ResumeAnalysis, InterviewSession } = require("../models");
 const getProfile = async (req, res, next) => {
   try {
     const user = await User.findByPk(req.user.id, {
-      attributes: ["id", "name", "email", "role", "isPro", "createdAt"],
+      attributes: ["id", "username", "email", "role", "isPro", "createdAt"],
     });
 
     if (!user) {

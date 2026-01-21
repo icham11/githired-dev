@@ -1,11 +1,8 @@
 const midtransClient = require("midtrans-client");
 const { Transaction, User } = require("../models");
-const crypto = require("crypto");
 
-// Create Snap API instance
-// Create Snap API instance
 const snap = new midtransClient.Snap({
-  isProduction: false, // User explicitly requested Sandbox
+  isProduction: false,
   serverKey: process.env.MIDTRANS_SERVER_KEY,
   clientKey: process.env.MIDTRANS_CLIENT_KEY,
 });
@@ -33,7 +30,7 @@ const initiatePayment = async (req, res, next) => {
           id: "PRO_SUBSCRIPTION",
           price: amount,
           quantity: 1,
-          name: "CareerForge Pro Subscription",
+          name: "GitHired Pro Subscription",
         },
       ],
       enabled_payments: [
@@ -48,7 +45,6 @@ const initiatePayment = async (req, res, next) => {
 
     const transaction = await snap.createTransaction(parameter);
 
-    // Save pending transaction
     await Transaction.create({
       orderId,
       amount,
@@ -71,9 +67,11 @@ const handleNotification = async (req, res, next) => {
     const statusResponse = req.body;
     const orderId = statusResponse.order_id;
     const transactionStatus = statusResponse.transaction_status;
+
     const fraudStatus = statusResponse.fraud_status;
 
     const transaction = await Transaction.findOne({ where: { orderId } });
+
     if (!transaction)
       return res.status(404).json({ message: "Transaction not found" });
 

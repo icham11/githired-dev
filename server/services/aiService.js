@@ -72,10 +72,13 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const cleanJSON = (text) => {
   // Remove markdown code blocks first
-  let cleaned = text
-    .replace(/```json/g, "")
-    .replace(/```/g, "")
-    .trim();
+  // let cleaned = text
+  //   .replace(/```json/g, "")
+  //   .replace(/```/g, "")
+  //   .trim();
+
+  const match = text.match(/\{[\s\S]*\}/);
+  return match ? match[0] : text;
 
   const firstOpen = cleaned.indexOf("{");
   if (firstOpen === -1) return cleaned;
@@ -227,24 +230,11 @@ const generateInterviewResponse = async (
   - **Brutally Honest**: If the user's answer is shallow or wrong, say it clearly (e.g., "That is incorrect/simplistic because..."). Do not sugarcoat bad technical answers.
   - **Dynamic**: Vary your questioning style (Scenario-based, Theory, System Design).
   
+ 
   **SESSION FLOW**:
   1. **Phase 1 (Opening/First Question)**: 
      - Do NOT start with a generic "Hello [Name], nice to meet you."
-     - VARIETY IS KEY. Pick ONE of these starting angles randomly:
-       a. **Deep Dive**: "Let's skip the basics. Explain how [Advanced Concept in ${role}] works under the hood."
-       b. **Scenario**: "Imagine our production server is down due to a memory leak in [Language/Tool]. How do you debug it?"
-       c. **Architecture**: "Design a scalable system for [Feature related to ${role}]. Where do you start?"
-     - Start IMMEDIATELY with the question. Minimal pleasantries.
-  
-  2. **Phase 2 (Q&A Loop)**:
-     - The user answers.
-  **SESSION FLOW**:
-  1. **Phase 1 (Opening/First Question)**: 
-     - Do NOT start with a generic "Hello [Name], nice to meet you."
-     - VARIETY IS KEY. Pick ONE of these starting angles randomly:
-       a. **Deep Dive**: "Let's skip the basics. Explain how [Advanced Concept in ${role}] works under the hood."
-       b. **Scenario**: "Imagine our production server is down due to a memory leak in [Language/Tool]. How do you debug it?"
-       c. **Architecture**: "Design a scalable system for [Feature related to ${role}]. Where do you start?"
+     - VARIETY IS KEY. 
      - Start IMMEDIATELY with the question. Minimal pleasantries.
   
   2. **Phase 2 (Q&A Loop)**:
