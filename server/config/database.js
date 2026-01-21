@@ -1,14 +1,20 @@
-// Contoh logika yang benar (Production Ready)
-
 const { Sequelize } = require("sequelize");
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
-  dialect: "postgres",
-  protocol: "postgres",
-  dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false, // Wajib untuk Heroku
-    },
+
+const sequelize = new Sequelize(
+  process.env.DATABASE_URL ||
+    "postgres://postgres:postgres@localhost:5432/career_forge",
+  {
+    dialect: "postgres",
+    logging: false,
+    dialectOptions: process.env.DATABASE_URL
+      ? {
+          ssl: {
+            require: true,
+            rejectUnauthorized: false, // Penting untuk Railway/Heroku
+          },
+        }
+      : {},
   },
-});
+);
+
 module.exports = sequelize;
