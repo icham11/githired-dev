@@ -12,8 +12,9 @@ router.post("/login", authController.login);
 router.use(authenticate);
 
 // Interview Session routes
+router.get("/interviews", interviewControllers.getHistory);
 router.post("/interviews", interviewControllers.startInterview);
-router.post("/interviews/chat", interviewControllers.chatInterview);
-router.post("/interviews/feedback", interviewControllers.submitFeedback);
+router.post("/interview/chat", interviewControllers.chatInterview);
+router.post("/interview/feedback", interviewControllers.submitFeedback);
 
 module.exports = router;
