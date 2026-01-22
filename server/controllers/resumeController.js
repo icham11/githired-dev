@@ -55,7 +55,22 @@ const analyze = async (req, res) => {
         }
       }
 
-      const data = await pdfParser(buffer);
+      // Check if it's a class constructor (Production environment case)
+      let data;
+      if (
+        pdfParser.toString().startsWith("class") ||
+        pdfParser.prototype?.constructor?.name === "PDFParse"
+      ) {
+        // It's a class, must use new
+        // The class might return a promise or have a parse method?
+        // Based on pdf-parse standard, it returns a Promise.
+        // If the class is a direct wrapper around that promise logic:
+        data = await new pdfParser(buffer);
+      } else {
+        // Standard function usage
+        data = await pdfParser(buffer);
+      }
+
       resumeText = data.text;
     } catch (parseError) {
       console.error("Error parsing PDF:", parseError);
