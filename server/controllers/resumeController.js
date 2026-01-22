@@ -43,7 +43,7 @@ const analyze = async (req, res) => {
     const resumeAnalysis = await ResumeAnalysis.create({
       userId: req.user.id,
       content: resumeText,
-      score: analysisResult.overallScore,
+      score: analysisResult.score,
       feedback: analysisResult.feedback,
       feedback_en: analysisResult.feedback_en,
       feedback_id: analysisResult.feedback_id,

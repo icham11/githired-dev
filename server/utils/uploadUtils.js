@@ -12,7 +12,7 @@ const uploadImageKit = async (fileBuffer, fileName) => {
         if (error) {
           return reject(error);
         }
-        resolve(result.url);
+        resolve(result);
       },
     );
   });
