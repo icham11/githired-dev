@@ -247,11 +247,65 @@ module.exports = {
   analyzeResume,
   generateInterviewResponse,
   evaluateInterview,
+
+  /**
+   * Text-to-Speech via Groq (Orpheus v1 English model).
+   * Returns audio buffer (MP3 format).
+   */
+  synthesizeSpeechGroq: async (text, outputPath = null) => {
+    if (!groq) {
+      throw new Error("GROQ_API_KEY missing");
+    }
+    if (!text || !text.trim()) {
+      throw new Error("No text provided for TTS");
+    }
+
+    try {
+      const response = await groq.chat.completions.create({
+        messages: [
+          {
+            role: "user",
+            content: text,
+          },
+        ],
+        model: "canopylabs/orpheus-v1-english",
+        temperature: 1,
+        max_tokens: 1024,
+        top_p: 1,
+        stream: false,
+        modalities: ["audio"],
+        audio: {
+          voice: "alloy",
+          format: "mp3",
+        },
+      });
+
+      // Get audio data from response
+      const audioData = response.choices[0]?.message?.audio?.data;
+      if (!audioData) {
+        throw new Error("No audio data returned from Groq");
+      }
+
+      // Convert base64 to buffer
+      const buffer = Buffer.from(audioData, "base64");
+
+      if (outputPath) {
+        const speechFile = path.resolve(outputPath);
+        await fs.promises.writeFile(speechFile, buffer);
+      }
+
+      return buffer;
+    } catch (error) {
+      console.error("Groq TTS Error:", error);
+      throw new Error("Failed to synthesize speech with Groq Orpheus");
+    }
+  },
+
   /**
    * Text-to-Speech via ElevenLabs (high quality voice).
    * Returns audio buffer (MP3 format).
    */
-  synthesizeSpeech: async (text, outputPath = null) => {
+  synthesizeSpeechElevenLabs: async (text, outputPath = null) => {
     if (!process.env.ELEVENLABS_API_KEY) {
       throw new Error("ELEVENLABS_API_KEY missing");
     }
@@ -281,7 +335,21 @@ module.exports = {
       return buffer;
     } catch (error) {
       console.error("ElevenLabs TTS Error:", error);
-      throw new Error("Failed to synthesize speech");
+      throw new Error("Failed to synthesize speech with ElevenLabs");
+    }
+  },
+
+  /**
+   * Default TTS - uses ElevenLabs by default, falls back to Groq if needed.
+   * Set TTS_PROVIDER=groq in .env to use Groq by default.
+   */
+  synthesizeSpeech: async (text, outputPath = null) => {
+    const provider = process.env.TTS_PROVIDER || "elevenlabs";
+
+    if (provider === "groq") {
+      return module.exports.synthesizeSpeechGroq(text, outputPath);
+    } else {
+      return module.exports.synthesizeSpeechElevenLabs(text, outputPath);
     }
   },
 };
