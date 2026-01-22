@@ -30,7 +30,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/oauth-success" element={<OAuthSuccess />} />{" "}
+        <Route path="/oauth-success" element={<OAuthSuccess />} />
         <Route
           path="/dashboard"
           element={
@@ -71,7 +71,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-        {/* Catch All */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

@@ -4,10 +4,20 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>client</title>
+    <title>client-retro</title>
   </head>
   <body>
     <div id="root"></div>
+    <!-- Midtrans Snap Script -->
+    <script
+      src="https://app.sandbox.midtrans.com/snap/snap.js"
+      data-client-key="SB-Mid-client-PLACEHOLDER"
+    ></script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
+
+//kenapa harus ada midtrans disini? //karena midtrans snap itu butuh script yang
+di include di html untuk bisa jalan //jadi kita include di index.html biar bisa
+di akses di seluruh aplikasi //data-client-key itu diisi sesuai dengan client
+key midtrans yang kita punya
