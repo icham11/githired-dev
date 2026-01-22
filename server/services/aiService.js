@@ -274,7 +274,7 @@ module.exports = {
         stream: false,
         modalities: ["audio"],
         audio: {
-          voice: "alloy",
+          voice: "autumn",
           format: "mp3",
         },
       });
