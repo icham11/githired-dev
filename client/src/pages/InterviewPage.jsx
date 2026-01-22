@@ -45,6 +45,8 @@ const InterviewPage = () => {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
   const lastSpokenIndex = useRef(-1);
+  const [isRecording, setIsRecording] = useState(false);
+  const recognitionRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -67,6 +69,35 @@ const InterviewPage = () => {
 
   const currentLang = settings?.language || "English";
   const text = uiText[currentLang] || uiText.English;
+
+  // Initialize Speech Recognition
+  useEffect(() => {
+    if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = language === "Indonesian" ? "id-ID" : "en-US";
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInput((prev) => prev + " " + transcript);
+        setIsRecording(false);
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+        setIsRecording(false);
+      };
+
+      recognition.onend = () => {
+        setIsRecording(false);
+      };
+
+      recognitionRef.current = recognition;
+    }
+  }, [language]);
 
   useEffect(() => {
     const savedSessionId = localStorage.getItem("currentSessionId");
@@ -152,6 +183,21 @@ const InterviewPage = () => {
     const userMessage = input;
     setInput("");
     await dispatch(sendMessage({ sessionId, message: userMessage }));
+  };
+
+  const toggleRecording = () => {
+    if (!recognitionRef.current) {
+      alert("Speech recognition is not supported in your browser");
+      return;
+    }
+
+    if (isRecording) {
+      recognitionRef.current.stop();
+      setIsRecording(false);
+    } else {
+      recognitionRef.current.start();
+      setIsRecording(true);
+    }
   };
 
   return (
@@ -413,10 +459,30 @@ const InterviewPage = () => {
                             }
                           }}
                           className="w-full bg-white/5 border border-white/10 text-white pl-4 pr-4 py-4 rounded-xl focus:outline-none focus:border-champion-gold/50 focus:bg-white/10 transition-all resize-none min-h-[60px] max-h-[120px]"
-                          placeholder="Type your answer..."
+                          placeholder={
+                            isRecording
+                              ? "Listening..."
+                              : "Type or speak your answer..."
+                          }
                           disabled={loading}
                         />
                       </div>
+                      <Button
+                        type="button"
+                        onClick={toggleRecording}
+                        disabled={loading}
+                        variant={isRecording ? "danger" : "secondary"}
+                        className={`py-4 px-6 h-[60px] rounded-xl flex items-center justify-center ${
+                          isRecording
+                            ? "animate-pulse bg-red-500 hover:bg-red-600"
+                            : ""
+                        }`}
+                        title={
+                          isRecording ? "Stop recording" : "Start voice input"
+                        }
+                      >
+                        <Mic size={20} />
+                      </Button>
                       <Button
                         type="button"
                         onClick={handleSendMessage}
@@ -433,7 +499,8 @@ const InterviewPage = () => {
                 {messages.filter((m) => m.role === "assistant").length < 4 && (
                   <div className="text-center mt-3">
                     <p className="text-[10px] text-gray-500 uppercase tracking-widest">
-                      Press Enter to Send • Shift + Enter for new line
+                      Press Enter to Send • Shift + Enter for new line • 🎤
+                      Voice Input Available
                     </p>
                   </div>
                 )}
