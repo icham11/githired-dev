@@ -1,10 +1,12 @@
-const pdf = require("pdf-parse");
+// Ganti require-nya
+const pdf = require("pdf-parse-fork"); // Atau "pdf-parse" jika kamu tidak mau ganti lib
 const { ResumeAnalysis, User } = require("../models");
 const { analyzeResume } = require("../services/aiService");
 const { uploadToImageKit } = require("../utils/uploadUtils");
 
 const analyze = async (req, res) => {
   try {
+    // 1. Validasi User
     const user = await User.findByPk(req.user.id);
     if (!user.isPro) {
       return res.status(403).json({
@@ -12,82 +14,55 @@ const analyze = async (req, res) => {
       });
     }
 
+    // 2. Validasi File
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
 
     const { buffer, originalname } = req.file;
 
-    // 1. Upload to ImageKit (async, don't block analysis if not strictly needed, but let's await it for data integrity)
-    // We wrap it in a try-catch so analysis can proceed even if upload fails (optional strategy, but consistent with "Scanner")
+    // 3. Parse PDF (Logic Sederhana & Stabil)
+    let resumeText = "";
+    try {
+      // Langsung panggil saja. Library ini didesain untuk handle buffer langsung.
+      const data = await pdf(buffer);
+      resumeText = data.text;
+
+      // Validasi jika hasil kosong
+      if (!resumeText || resumeText.trim().length === 0) {
+        throw new Error("PDF text is empty");
+      }
+    } catch (parseError) {
+      console.error("Error parsing PDF:", parseError);
+      return res.status(400).json({
+        message:
+          "Gagal membaca PDF. Pastikan file tidak rusak atau dipassword.",
+        error: parseError.message,
+      });
+    }
+
+    // 4. Upload ke ImageKit (Opsional, dilakukan paralel biar cepat)
+    // Kita biarkan upload jalan di background atau await jika memang butuh URL-nya disimpan
     let fileUrl = null;
     try {
       const uploadResult = await uploadToImageKit(buffer, originalname);
       fileUrl = uploadResult.url;
-    } catch (uploadError) {
-      console.error("ImageKit Upload Failed:", uploadError);
-      // Continue with analysis, just won't have a URL
+    } catch (err) {
+      console.warn(
+        "ImageKit upload failed, but continuing analysis:",
+        err.message,
+      );
     }
 
-    // 2. Parse Text from Buffer
-    let resumeText = "";
-    try {
-      let pdfParser = pdf;
-      // Handle ESM/CommonJS specific behavior on some environments (like the production server)
-      if (typeof pdfParser !== "function") {
-        if (pdfParser.default && typeof pdfParser.default === "function") {
-          pdfParser = pdfParser.default;
-        } else if (
-          pdfParser.PDFParse &&
-          typeof pdfParser.PDFParse === "function"
-        ) {
-          // Detected specific module structure on production
-          pdfParser = pdfParser.PDFParse;
-        } else {
-          console.error(
-            "PDF Parser is not a function. Keys:",
-            Object.keys(pdfParser),
-          );
-          console.error("PDF Parser value:", pdfParser);
-          throw new Error(
-            "PDF Parser configuration error: unable to find parse function",
-          );
-        }
-      }
-
-      // Check if it's a class constructor (Production environment case)
-      let data;
-      if (
-        pdfParser.toString().startsWith("class") ||
-        pdfParser.prototype?.constructor?.name === "PDFParse"
-      ) {
-        // It's a class, must use new
-        // The class might return a promise or have a parse method?
-        // Based on pdf-parse standard, it returns a Promise.
-        // If the class is a direct wrapper around that promise logic:
-        data = await new pdfParser(buffer);
-      } else {
-        // Standard function usage
-        data = await pdfParser(buffer);
-      }
-
-      resumeText = data.text;
-    } catch (parseError) {
-      console.error("Error parsing PDF:", parseError);
-      return res.status(400).json({
-        message: "Invalid PDF file structure. Please upload a valid PDF.",
-      });
-    }
-
-    // 3. AI Analysis
+    // 5. AI Analysis
     const analysisResult = await analyzeResume(resumeText);
 
-    // 4. Save to DB
+    // 6. Save to DB
     const resumeAnalysis = await ResumeAnalysis.create({
       userId: req.user.id,
       content: resumeText,
       score: analysisResult.score,
-      feedback: analysisResult.feedback, // Default
+      feedback: analysisResult.feedback,
       feedback_en: analysisResult.feedback_en,
       feedback_id: analysisResult.feedback_id,
       fileUrl: fileUrl,
@@ -95,9 +70,10 @@ const analyze = async (req, res) => {
 
     res.json(resumeAnalysis);
   } catch (error) {
-    console.error("Resume Analysis Error:", error.message);
+    console.error("Resume Analysis Error:", error);
     res.status(500).json({
-      message: "Error analyzing resume",
+      message: "Terjadi kesalahan saat menganalisa resume.",
+      error: error.message,
     });
   }
 };
