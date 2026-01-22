@@ -100,16 +100,16 @@ const interviewSlice = createSlice({
           difficulty: action.payload.difficulty,
           language: action.payload.language,
         };
-        // Parse history if it comes as string, though usually backend sends valid JSON object with sequelize
-        // But our `chatHistory` in DB is TEXT. Backend controller creates it with "[]".
-        // Let's safe parse usually.
+        // Parse history if it comes as string
         let history = [];
         try {
           history =
             typeof action.payload.chatHistory === "string"
               ? JSON.parse(action.payload.chatHistory)
               : action.payload.chatHistory;
-        } catch (e) {}
+        } catch (error) {
+          console.error("Failed to parse chat history:", error);
+        }
         state.messages = history;
       })
       .addCase(startInterview.rejected, (state, action) => {
@@ -119,12 +119,9 @@ const interviewSlice = createSlice({
       // Send Message
       .addCase(sendMessage.pending, (state) => {
         state.loading = true;
-        // Optimistically add user message? maybe. Let's wait for now.
       })
       .addCase(sendMessage.fulfilled, (state, action) => {
         state.loading = false;
-        // Backend returns: { response: "string" }
-        // We need to append the NEW exchange to our local state
         // The thunk arg had the 'message' (user)
         const userMsg = action.meta.arg.message;
         const aiMsg = action.payload.response;
@@ -155,7 +152,9 @@ const interviewSlice = createSlice({
             typeof action.payload.chatHistory === "string"
               ? JSON.parse(action.payload.chatHistory)
               : action.payload.chatHistory;
-        } catch (e) {}
+        } catch (error) {
+          console.error("Failed to parse chat history:", error);
+        }
         state.messages = history;
       })
       .addCase(fetchSession.rejected, (state, action) => {

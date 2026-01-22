@@ -1,21 +1,32 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
-import API from "../api";
-import SubscriptionModal from "../components/SubscriptionModal";
+import api from "../api";
+// eslint-disable-next-line no-unused-vars
+import { motion } from "framer-motion";
+import {
+  User,
+  Mail,
+  Trophy,
+  Star,
+  FileText,
+  MessageSquare,
+  TrendingUp,
+  Calendar,
+  ArrowRight,
+} from "lucide-react";
 
 const ProfilePage = () => {
   const [profile, setProfile] = useState(null);
   const [history, setHistory] = useState({ resumes: [], interviews: [] });
   const [activeTab, setActiveTab] = useState("resume");
   const [loading, setLoading] = useState(true);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [profileRes, historyRes] = await Promise.all([
-          API.get("/user/profile"),
-          API.get("/user/history"),
+          api.get("/user/profile"),
+          api.get("/user/history"),
         ]);
         setProfile(profileRes.data);
         setHistory(historyRes.data);
@@ -30,326 +41,259 @@ const ProfilePage = () => {
 
   if (loading)
     return (
-      <div className="text-white text-center py-20">Loading profile...</div>
+      <div className="min-h-screen bg-champion-dark text-champion-gold font-heading font-bold flex items-center justify-center animate-pulse">
+        LOADING PROFILE DATA...
+      </div>
     );
 
   if (!profile)
     return (
-      <div className="text-white text-center py-20">
-        Failed to load profile.
-        <br />
-        <span className="text-red-400 text-sm">
-          Possible reason: Server Error or Network Issue. <br />
-          Try to Logout and Login again.
-        </span>
+      <div className="min-h-screen bg-champion-dark text-red-500 font-heading font-bold flex items-center justify-center">
+        DATA CORRUPTED. RETRY LOGIN.
       </div>
     );
 
   const { user, stats, gamification } = profile;
 
-  // Tier Colors
-  const tierColors = {
-    Bronze: "from-orange-700 to-orange-400",
-    Silver: "from-gray-400 to-gray-100",
-    Gold: "from-yellow-600 to-yellow-300",
-  };
-
-  // Score Helpers
-  const getScoreLabel = (score) => {
-    if (!score && score !== 0) return "N/A";
-    if (score >= 85) return "Exceptional";
-    if (score >= 70) return "Good";
-    if (score >= 50) return "Average";
-    return "Needs Improvement";
-  };
-
-  const getScoreColor = (score) => {
-    if (!score && score !== 0) return "text-zinc-500";
-    if (score >= 85) return "text-purple-400";
-    if (score >= 70) return "text-green-400";
-    if (score >= 50) return "text-yellow-400";
-    return "text-red-400";
-  };
-
   return (
-    <>
+    <div className="min-h-screen bg-champion-dark font-sans text-champion-text">
       <Navbar />
-      {showUpgradeModal && (
-        <SubscriptionModal
-          onClose={() => setShowUpgradeModal(false)}
-          onSuccess={() => {
-            setShowUpgradeModal(false);
-            window.location.reload(); // Simple reload to refresh data
-          }}
-        />
-      )}
-      <div className="container py-10 max-w-5xl text-white">
-        {/* Header Profile */}
-        <div className="glass-card p-8 rounded-3xl mb-10 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
-          {/* Background Glow based on Tier */}
-          <div
-            className={`absolute top-0 right-0 w-96 h-96 bg-gradient-to-br ${tierColors[gamification.tier]} opacity-10 blur-[100px] rounded-full -z-10`}
-          ></div>
 
-          <div className="relative">
-            <div
-              className={`w-32 h-32 rounded-full bg-gradient-to-r ${tierColors[gamification.tier]} p-1`}
-            >
-              <div className="w-full h-full bg-zinc-900 rounded-full flex items-center justify-center text-4xl font-bold uppercase">
-                {(user.name || "U").charAt(0)}
-              </div>
-            </div>
-            {/* Badge */}
-            <div
-              className={`absolute -bottom-2 -right-2 bg-gradient-to-r ${tierColors[gamification.tier]} px-4 py-1 rounded-full text-black font-bold text-sm shadow-lg`}
-            >
-              {gamification.tier}
-            </div>
+      <div className="container mx-auto px-6 pt-32 pb-12 max-w-5xl">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-champion-card border border-white/5 p-8 rounded-2xl relative overflow-hidden mb-8"
+        >
+          <div className="absolute top-0 right-0 p-4 bg-champion-gold/10 text-champion-gold font-bold text-xs uppercase rounded-bl-xl tracking-widest flex items-center gap-2">
+            <Trophy size={14} />
+            Level: {gamification.tier}
           </div>
 
-          <div className="flex-1 text-center md:text-left">
-            <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
-              <h1 className="text-3xl font-bold">{user.name || "User"}</h1>
-              {user.isPro ? (
-                <span className="bg-gradient-to-r from-amber-400 to-yellow-500 text-black text-xs font-bold px-2 py-1 rounded">
-                  PRO
+          <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-4xl font-heading font-bold shadow-lg shadow-indigo-500/20">
+              {(user.username || "U").charAt(0).toUpperCase()}
+            </div>
+
+            <div className="flex-1 text-center md:text-left w-full">
+              <h1 className="text-3xl font-heading font-bold text-white mb-1">
+                {user.username}
+              </h1>
+              <div className="flex items-center justify-center md:justify-start gap-2 text-gray-500 text-sm mb-6">
+                <Mail size={14} />
+                {user.email}
+              </div>
+
+              <div className="w-full bg-white/5 h-3 rounded-full overflow-hidden mb-2">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${gamification.progress}%` }}
+                  transition={{ duration: 1, delay: 0.5 }}
+                  className="bg-gradient-gold h-full rounded-full"
+                />
+              </div>
+              <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-gray-500">
+                <span>Current XP</span>
+                <span className="text-champion-gold">
+                  Next Rank: {gamification.nextTier}
                 </span>
-              ) : (
-                <button
-                  onClick={() => setShowUpgradeModal(true)}
-                  className="bg-zinc-800 hover:bg-zinc-700 text-xs px-3 py-1 rounded-full border border-amber-500/50 text-amber-500 transition-colors"
-                >
-                  Upgrade to Pro 👑
-                </button>
-              )}
-            </div>
-            <p className="text-zinc-400 mb-4">{user.email}</p>
-
-            {/* Progress Bar */}
-            <div className="bg-zinc-800 h-4 rounded-full overflow-hidden max-w-md w-full mx-auto md:mx-0 relative group">
-              <div
-                className={`h-full bg-gradient-to-r ${tierColors[gamification.tier]} transition-all duration-1000`}
-                style={{ width: `${gamification.progress}%` }}
-              ></div>
-              <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">
-                {gamification.nextTier === "Max"
-                  ? "MAX LEVEL"
-                  : `NEXT: ${gamification.nextTier.toUpperCase()}`}
               </div>
             </div>
-            <p className="text-xs text-zinc-500 mt-2">
-              Level Progress: {Math.round(gamification.progress)}%
-            </p>
           </div>
+        </motion.div>
 
-          {/* Stats */}
-          <div className="flex gap-8 border-l border-white/10 pl-8 hidden md:flex">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-gradient-gold">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-champion-card border border-white/5 p-6 rounded-2xl flex items-center gap-4"
+          >
+            <div className="p-3 bg-blue-500/10 text-blue-500 rounded-lg">
+              <FileText size={24} />
+            </div>
+            <div>
+              <div className="text-3xl font-heading font-bold text-white">
                 {stats.resumeCount}
               </div>
-              <div className="text-xs text-zinc-400 uppercase tracking-widest">
-                Resumes
+              <div className="text-xs uppercase tracking-widest text-gray-500">
+                Resumes Scanned
               </div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-gradient-gold">
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-champion-card border border-white/5 p-6 rounded-2xl flex items-center gap-4"
+          >
+            <div className="p-3 bg-purple-500/10 text-purple-500 rounded-lg">
+              <MessageSquare size={24} />
+            </div>
+            <div>
+              <div className="text-3xl font-heading font-bold text-white">
                 {stats.interviewCount}
               </div>
-              <div className="text-xs text-zinc-400 uppercase tracking-widest">
-                Interviews
+              <div className="text-xs uppercase tracking-widest text-gray-500">
+                Mock Interviews
               </div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-gradient-gold">
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-champion-card border border-white/5 p-6 rounded-2xl flex items-center gap-4"
+          >
+            <div className="p-3 bg-yellow-500/10 text-yellow-500 rounded-lg">
+              <Star size={24} />
+            </div>
+            <div>
+              <div className="text-3xl font-heading font-bold text-white">
                 {stats.avgScore}
               </div>
-              <div className="text-xs text-zinc-400 uppercase tracking-widest">
-                Avg Score
+              <div className="text-xs uppercase tracking-widest text-gray-500">
+                Avg Performance
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
 
-        {/* Gamification & Readiness Panel */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-          {/* Hiring Readiness */}
-          <div className="glass-card p-6 rounded-2xl relative overflow-hidden">
-            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-              🎯 Hiring Readiness
-            </h3>
-            <div className="flex items-center gap-4">
-              <div
-                className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold border-4 ${
-                  stats.avgScore >= 80
-                    ? "border-green-500 text-green-400 bg-green-500/10"
-                    : "border-amber-500 text-amber-500 bg-amber-500/10"
-                }`}
-              >
-                {stats.avgScore}
-              </div>
-              <div>
-                <div
-                  className={`text-xl font-bold ${stats.avgScore >= 80 ? "text-green-400" : "text-amber-500"}`}
-                >
-                  {stats.avgScore >= 80
-                    ? "Ready to Hire! 🚀"
-                    : "Developing Talent 🌱"}
-                </div>
-                <p className="text-zinc-400 text-xs">
-                  {stats.avgScore >= 80
-                    ? "Great job! Your average score is very strong. You are ready for real interviews."
-                    : "Keep practicing! Aim for an average score of 80+ across resumes and interviews."}
-                </p>
-              </div>
-            </div>
+        {/* History Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-champion-card border border-white/5 rounded-2xl overflow-hidden"
+        >
+          <div className="flex border-b border-white/5">
+            <button
+              onClick={() => setActiveTab("resume")}
+              className={`flex-1 py-4 text-sm font-bold uppercase tracking-widest transition-colors ${
+                activeTab === "resume"
+                  ? "bg-white/5 text-white border-b-2 border-champion-gold"
+                  : "text-gray-500 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              Resume Logs
+            </button>
+            <button
+              onClick={() => setActiveTab("interview")}
+              className={`flex-1 py-4 text-sm font-bold uppercase tracking-widest transition-colors ${
+                activeTab === "interview"
+                  ? "bg-white/5 text-white border-b-2 border-champion-gold"
+                  : "text-gray-500 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              Simulation Logs
+            </button>
           </div>
 
-          {/* Badge Legend */}
-          <div className="glass-card p-6 rounded-2xl">
-            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-              🏆 Membership Tiers
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-700 to-orange-400 flex items-center justify-center text-xs font-bold ring-1 ring-white/20">
-                  B
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-orange-400">
-                    Bronze
-                  </div>
-                  <div className="text-xs text-zinc-500">
-                    Starter Level (0-4 Activities)
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-400 to-gray-100 flex items-center justify-center text-xs font-bold text-black ring-1 ring-white/20">
-                  S
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-gray-300">Silver</div>
-                  <div className="text-xs text-zinc-500">
-                    Active User (5-14 Activities)
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-300 flex items-center justify-center text-xs font-bold text-black ring-1 ring-white/20">
-                  G
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-yellow-400">Gold</div>
-                  <div className="text-xs text-zinc-500">
-                    Master Level (15+ Activities)
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* History Tabs */}
-        <div className="flex gap-6 mb-6 border-b border-white/10 pb-1">
-          <button
-            onClick={() => setActiveTab("resume")}
-            className={`pb-3 px-2 text-lg font-medium transition-all ${
-              activeTab === "resume"
-                ? "text-amber-400 border-b-2 border-amber-400"
-                : "text-zinc-500 hover:text-zinc-300"
-            }`}
-          >
-            Resume Analysis
-          </button>
-          <button
-            onClick={() => setActiveTab("interview")}
-            className={`pb-3 px-2 text-lg font-medium transition-all ${
-              activeTab === "interview"
-                ? "text-amber-400 border-b-2 border-amber-400"
-                : "text-zinc-500 hover:text-zinc-300"
-            }`}
-          >
-            Mock Interviews
-          </button>
-        </div>
-
-        {/* List Content */}
-        <div className="grid gap-4">
-          {activeTab === "resume" ? (
-            history.resumes.length === 0 ? (
-              <p className="text-zinc-500 italic">
-                No resume analysis history found.
-              </p>
-            ) : (
-              history.resumes.map((item) => (
-                <div
-                  key={item.id}
-                  className="glass-card p-6 rounded-xl hover:bg-zinc-800/50 transition-colors flex justify-between items-center group"
-                >
-                  <div>
-                    <div className="text-sm text-zinc-400 mb-1">
-                      {new Date(item.createdAt).toLocaleDateString()}
+          <div className="p-6">
+            {activeTab === "resume" && (
+              <div className="space-y-4">
+                {history.resumes.map((item) => (
+                  <div
+                    key={item.id}
+                    className="group flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-champion-gold/30 transition-all"
+                  >
+                    <div className="flex items-center gap-4 mb-2 md:mb-0">
+                      <div className="p-2 bg-white/10 rounded-lg text-gray-400 group-hover:text-white transition-colors">
+                        <FileText size={18} />
+                      </div>
+                      <div>
+                        <div className="font-bold text-white">
+                          Resume Analysis
+                        </div>
+                        <div className="text-xs text-gray-500 flex items-center gap-1">
+                          <Calendar size={10} />
+                          {new Date(item.createdAt).toLocaleDateString()}
+                        </div>
+                      </div>
                     </div>
-                    <div className="font-bold text-lg flex items-center gap-2">
-                      <span className="text-2xl">📄</span> Score:{" "}
-                      <span
-                        className={
-                          item.score >= 80 ? "text-green-400" : "text-amber-400"
-                        }
-                      >
-                        {item.score}
-                      </span>
+
+                    <div className="flex items-center gap-6">
+                      <div className="text-right">
+                        <div className="text-xs uppercase text-gray-500">
+                          Score
+                        </div>
+                        <div
+                          className={`font-bold font-heading text-lg ${item.score >= 80 ? "text-green-400" : item.score >= 60 ? "text-yellow-400" : "text-red-400"}`}
+                        >
+                          {item.score}/100
+                        </div>
+                      </div>
+                      {item.fileUrl && (
+                        <a
+                          href={item.fileUrl}
+                          target="_blank"
+                          className="p-2 rounded-full border border-white/10 hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+                          title="View PDF"
+                        >
+                          <ArrowRight size={16} />
+                        </a>
+                      )}
                     </div>
                   </div>
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    {item.fileUrl && (
-                      <a
-                        href={item.fileUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-sm text-amber-500 hover:underline mr-4"
-                      >
-                        View PDF
-                      </a>
-                    )}
-                  </div>
-                </div>
-              ))
-            )
-          ) : history.interviews.length === 0 ? (
-            <p className="text-zinc-500 italic">No interview history found.</p>
-          ) : (
-            history.interviews.map((item) => (
-              <div
-                key={item.id}
-                className="glass-card p-6 rounded-xl hover:bg-zinc-800/50 transition-colors flex justify-between items-center"
-              >
-                <div>
-                  <div className="text-sm text-zinc-400 mb-1">
-                    {new Date(item.createdAt).toLocaleDateString()}
-                  </div>
-                  <div className="font-bold text-lg mb-1">{item.role}</div>
-                  <div className="text-sm flex items-center gap-2">
-                    <span className="text-zinc-400">Score:</span>
-                    <span className={`font-bold ${getScoreColor(item.score)}`}>
-                      {item.score || "N/A"}
-                    </span>
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full border ${getScoreColor(
-                        item.score,
-                      )} border-current bg-opacity-10`}
-                    >
-                      {getScoreLabel(item.score)}
-                    </span>
-                  </div>
-                </div>
+                ))}
               </div>
-            ))
-          )}
-        </div>
+            )}
+
+            {activeTab === "interview" && (
+              <div className="space-y-4">
+                {history.interviews.map((item) => (
+                  <div
+                    key={item.id}
+                    className="group flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-champion-gold/30 transition-all"
+                  >
+                    <div className="flex items-center gap-4 mb-2 md:mb-0">
+                      <div className="p-2 bg-white/10 rounded-lg text-gray-400 group-hover:text-white transition-colors">
+                        <MessageSquare size={18} />
+                      </div>
+                      <div>
+                        <div className="font-bold text-white max-w-[200px] truncate">
+                          {item.role}
+                        </div>
+                        <div className="text-xs text-gray-500 flex items-center gap-1">
+                          <Calendar size={10} />
+                          {new Date(item.createdAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-6">
+                      <div className="text-right">
+                        <div className="text-xs uppercase text-gray-500">
+                          Score
+                        </div>
+                        <div
+                          className={`font-bold font-heading text-lg ${item.score >= 80 ? "text-green-400" : item.score >= 60 ? "text-yellow-400" : "text-red-400"}`}
+                        >
+                          {item.score}/100
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {((activeTab === "resume" && history.resumes.length === 0) ||
+              (activeTab === "interview" &&
+                history.interviews.length === 0)) && (
+              <div className="text-center py-12 text-gray-500">
+                <div className="mb-2 opacity-50">
+                  <TrendingUp size={48} className="mx-auto" />
+                </div>
+                <p>No activity recorded yet.</p>
+              </div>
+            )}
+          </div>
+        </motion.div>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -1,21 +1,36 @@
 import axios from "axios";
 
-// Bikin Instance Axios (Biar gak setting ulang terus)
+// PENTING: Ganti URL ini kalau sudah deploy ke AWS (http://IVP4_PUBLIC:3000)
+// Untuk sekarang local dev:
 const api = axios.create({
-  baseURL: "http://localhost:3001", // Alamat Server Backend kita
-  headers: {
-    "Content-Type": "application/json",
-  },
+  // baseURL: "https://api.gethire.studio",
+  baseURL: "https://api.gethire.studio",
 });
 
-// Interceptor (Satpam Frontend)
-// Setiap kali mau kirim request, selipkan Token di saku (Header)
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token"); // Ambil token dari brankas browser
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// Add auth token to requests
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  },
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      // Optional: window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  },
+);
 
 export default api;

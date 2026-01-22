@@ -1,148 +1,175 @@
-import { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React from "react";
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+import Navbar from "../components/Navbar";
+// eslint-disable-next-line no-unused-vars
+import { motion } from "framer-motion";
 import {
-  startInterview,
-  sendMessage,
-  clearInterview,
-} from "../store/slices/interviewSlice";
+  FileText,
+  MessageSquare,
+  Trophy,
+  ArrowRight,
+  Zap,
+  Star,
+  Activity,
+  User,
+} from "lucide-react";
 
-import { useNavigate } from "react-router-dom";
-import { logout } from "../store/slices/authSlice";
+const DashboardCard = ({
+  to,
+  title,
+  subtitle,
+  icon: Icon, // eslint-disable-line no-unused-vars
+  color,
+  delay,
+  className,
+}) => (
+  <Link to={to} className={`block h-full ${className}`}>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay, duration: 0.4 }}
+      className="h-full bg-champion-card border border-white/5 p-8 relative overflow-hidden group hover:border-champion-gold/50 transition-all duration-300"
+    >
+      <div
+        className={`absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-100 transition-opacity text-${color}-500`}
+      >
+        <Icon size={48} />
+      </div>
 
-export default function DashboardPage() {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const [role, setRole] = useState("Frontend Developer");
-  const [message, setMessage] = useState("");
-  const [difficulty, setDifficulty] = useState("Junior");
+      <div className="relative z-10 flex flex-col h-full justify-between">
+        <div>
+          <div
+            className={`p-3 w-fit rounded-lg bg-white/5 mb-6 text-${color}-400 group-hover:text-champion-gold transition-colors`}
+          >
+            <Icon size={24} />
+          </div>
+          <h3 className="text-2xl font-heading font-bold text-white mb-2">
+            {title}
+          </h3>
+          <p className="text-gray-400 text-sm">{subtitle}</p>
+        </div>
 
+        <div className="mt-8 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white group-hover:text-champion-gold transition-colors">
+          Access Module <ArrowRight size={16} />
+        </div>
+      </div>
+
+      {/* Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/0 via-white/0 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+    </motion.div>
+  </Link>
+);
+
+const StatCard = (
+  { label, value, icon: Icon, delay }, // eslint-disable-line no-unused-vars
+) => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay, duration: 0.4 }}
+    className="bg-champion-card border border-white/5 p-6 flex items-center gap-4"
+  >
+    <div className="p-3 bg-champion-gold/10 rounded-full text-champion-gold">
+      <Icon size={20} />
+    </div>
+    <div>
+      <div className="text-2xl font-heading font-bold text-white">{value}</div>
+      <div className="text-xs uppercase tracking-widest text-gray-500">
+        {label}
+      </div>
+    </div>
+  </motion.div>
+);
+
+const Dashboard = () => {
   const { user } = useSelector((state) => state.auth);
-  const { chatHistory, activeSession, loading } = useSelector(
-    (state) => state.interview,
-  );
-
-  useEffect(() => {
-    if (!user) {
-      navigate("/login");
-    }
-    if (localStorage.getItem("token") === null) {
-      navigate("/login");
-    }
-  }, [user, navigate]);
-  const handleStartSession = () => {
-    dispatch(startInterview({ role, difficulty }));
-  };
-
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-    if (message.trim() === "") return;
-    dispatch(
-      sendMessage({ sessionId: activeSession.id, userMessage: message }),
-    );
-    setMessage("");
-  };
-
-  const handleLogout = () => {
-    dispatch(logout());
-    dispatch(clearInterview());
-    navigate("/login");
-  };
-
-  if (!user) {
-    return null;
-  }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {!activeSession ? (
-        <div className="bg-gray-800 p-8 rounded-lg text-center">
-          <h2 className="text-xl mb-6">Start Interview Session</h2>
-          <div className="flex gap-4 justify-center mb-6">
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="bg-gray-700  p-2 rounded"
-            >
-              <option>Frontend Developer</option>
-              <option>Backend Developer</option>
-              <option>Fullstack Developer</option>
-              <option>Data Scientist</option>
-            </select>
-            <select
-              value={difficulty}
-              onChange={(e) => setDifficulty(e.target.value)}
-              className="bg-gray-700 p-2 rounded"
-            >
-              <option>Junior</option>
-              <option>Mid-level</option>
-              <option>Senior</option>
-            </select>
-          </div>
-          <button
-            onClick={handleStartSession}
-            className="bg-blue-600 px-6 py-2 rounded font-bold hover:bg-blue-700"
-          >
-            {loading ? "Starting..." : "Start Interview 🚀"}
-          </button>
-        </div>
-      ) : (
-        <div className="bg-gray-800 p-6 rounded-lg overflow-hidden h-[600px] flex flex-col ">
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {chatHistory.length === 0 && (
-              <div className="text-gray-500 text-center mt-10">
-                No messages yet. Start the conversation!
-              </div>
-            )}
-            {chatHistory.map((chat, index) => (
-              <div
-                key={index}
-                className={`flex ${chat.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[80%] p-3 rounded-lg ${
-                    chat.role === "user"
-                      ? "bg-blue-600 text-white rounded-tr-none"
-                      : "bg-gray-700 text-gray-200 rounded-tl-none"
-                  }`}
-                >
-                  {chat.content || chat.message}
-                </div>
-              </div>
-            ))}
-            {loading && (
-              <div className="text-gray-400 text-sm animate-pulse">
-                AI is thinking...
-              </div>
-            )}
-          </div>
-          <form
-            onSubmit={handleSendMessage}
-            className="p-4 bg-gray-900 flex border-t border-gray-700 gap-2"
-          >
-            <input
-              type="text"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              className="flex-1 p-3 bg-gray-800 rounded outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={loading}
-              placeholder="Type your message..."
-            />
-            <button
-              type="submit"
-              className="bg-blue-600 px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-              disabled={loading || message.trim() === ""}
-            >
-              Send
-            </button>
-          </form>
-        </div>
-      )}
+    <div className="min-h-screen bg-champion-dark font-sans text-champion-text">
+      <Navbar />
 
-      <div className="text-center mt-6">
-        <button onClick={handleLogout} className="text-red-500 hover:underline">
-          Logout
-        </button>
+      <div className="container mx-auto px-6 pt-32 pb-12">
+        <div className="mb-12">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <h1 className="text-4xl md:text-5xl font-heading font-bold text-white mb-2">
+              WELCOME BACK,{" "}
+              <span className="text-champion-gold">{user?.username}</span>
+            </h1>
+            <p className="text-gray-400">
+              Your command center is ready. Choose your training module.
+            </p>
+          </motion.div>
+        </div>
+
+        {/* Stats Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+          <StatCard label="Rank" value="Gold" icon={Trophy} delay={0.1} />
+          <StatCard label="XP" value="2,450" icon={Zap} delay={0.2} />
+          <StatCard label="Avg Score" value="88%" icon={Star} delay={0.3} />
+          <StatCard label="Activity" value="High" icon={Activity} delay={0.4} />
+        </div>
+
+        {/* Bento Grid layout */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[300px]">
+          {/* Main Module: Mock Interview (Large) */}
+          <DashboardCard
+            to="/interview"
+            title="MOCK INTERVIEW"
+            subtitle="AI-driven simulation with real-time analysis."
+            icon={MessageSquare}
+            color="indigo"
+            delay={0.2}
+            className="md:col-span-2"
+          />
+
+          {/* Side Module: Resume (Tall) */}
+          <DashboardCard
+            to="/resume"
+            title="RESUME SCANNER"
+            subtitle="ATS Optimization & Feedback."
+            icon={FileText}
+            color="emerald"
+            delay={0.3}
+            className="md:col-span-1"
+          />
+
+          {/* Bottom Module: Profile (Wide) */}
+          <DashboardCard
+            to="/profile"
+            title="YOUR PROFILE"
+            subtitle="View detailed stats and history logs."
+            icon={User}
+            color="orange"
+            delay={0.4}
+            className="md:col-span-3 lg:col-span-1"
+          />
+
+          <div className="md:col-span-3 lg:col-span-2 bg-champion-card border border-white/5 p-8 flex flex-col justify-center items-center text-center relative overflow-hidden">
+            <div className="relative z-10">
+              <h3 className="text-2xl font-heading font-bold text-white mb-2">
+                PRO UPGRADE AVAILABLE
+              </h3>
+              <p className="text-gray-400 mb-6">
+                Unlock "Extreme" difficulty and unlimited sessions.
+              </p>
+              <Link
+                to="/payment"
+                className="text-champion-gold font-bold hover:text-white transition-colors underline decoration-2 underline-offset-4"
+              >
+                VIEW PLANS
+              </Link>
+            </div>
+            <div className="absolute inset-0 bg-gradient-gold opacity-5" />
+          </div>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default Dashboard;

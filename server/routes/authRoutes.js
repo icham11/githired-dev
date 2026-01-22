@@ -32,7 +32,7 @@ router.get(
       { expiresIn: "24h" },
     );
 
-    res.redirect(`http://localhost:5174/oauth-success?token=${token}`);
+    res.redirect(`http://localhost:5173/oauth-success?token=${token}`);
   },
 );
 
