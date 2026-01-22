@@ -24,13 +24,27 @@ const PaymentPage = () => {
         window.snap.pay(token, {
           onSuccess: function (result) {
             console.log("Payment success:", result);
-            alert("Payment Successful! Welcome to the Elite Tier.");
-            navigate("/dashboard");
+            // Call backend to confirm & upgrade (useful when webhook cannot reach localhost)
+            api
+              .post("/payment/confirm", { orderId: result.order_id })
+              .catch((err) => {
+                console.error("Confirm payment failed", err);
+              })
+              .finally(() => {
+                alert("Payment Successful! Welcome to the Elite Tier.");
+                navigate("/dashboard");
+              });
           },
           onPending: function (result) {
             console.log("Payment pending:", result);
-            alert("Payment Pending. Please complete the transaction.");
-            navigate("/dashboard");
+            // Attempt confirm to fetch latest status
+            api
+              .post("/payment/confirm", { orderId: result.order_id })
+              .catch(() => {})
+              .finally(() => {
+                alert("Payment Pending. Please complete the transaction.");
+                navigate("/dashboard");
+              });
           },
           onError: function (result) {
             console.log("Payment error:", result);
