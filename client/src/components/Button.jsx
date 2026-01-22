@@ -1,3 +1,5 @@
+import { motion } from "framer-motion";
+
 const Button = ({
   onClick,
   children,
@@ -5,28 +7,44 @@ const Button = ({
   variant = "primary",
   disabled = false,
   type = "button",
+  size = "md",
 }) => {
   const baseStyles =
-    "px-6 py-2.5 rounded-full font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black active:scale-95";
+    "font-sans font-bold uppercase tracking-wider transition-all duration-300 relative overflow-hidden group";
+
+  const sizes = {
+    sm: "px-4 py-2 text-xs",
+    md: "px-8 py-3 text-sm",
+    lg: "px-10 py-4 text-base",
+  };
+
   const variants = {
-    primary: "btn-luxury-primary",
+    primary:
+      "bg-champion-gold text-champion-dark hover:bg-white hover:text-black shadow-[0_0_15px_rgba(212,175,55,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.4)]",
     secondary:
-      "bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-white/5 hover:border-white/10 shadow-lg",
+      "bg-transparent text-champion-gold border border-champion-gold/30 hover:border-champion-gold hover:bg-champion-gold/10",
     outline:
-      "border border-amber-500/50 text-amber-500 hover:bg-amber-500/10 hover:border-amber-500 shadow-amber-900/20 shadow-lg",
+      "text-champion-silver border border-champion-silver/20 hover:border-white hover:text-white",
     danger:
-      "bg-red-900/20 border border-red-500/50 text-red-500 hover:bg-red-900/40 hover:border-red-500",
+      "bg-red-900/20 text-red-500 border border-red--900/50 hover:bg-red-600 hover:text-white hover:border-red-600",
   };
 
   return (
-    <button
+    <motion.button
       type={type}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      className={`${baseStyles} ${sizes[size]} ${variants[variant]} ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
       onClick={onClick}
-      className={`${baseStyles} ${variants[variant] || variants.primary} ${className}`}
       disabled={disabled}
     >
-      {children}
-    </button>
+      <span className="relative z-10 flex items-center justify-center gap-2">
+        {children}
+      </span>
+      {variant === "primary" && (
+        <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+      )}
+    </motion.button>
   );
 };
 
