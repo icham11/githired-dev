@@ -3,7 +3,6 @@ import axios from "axios";
 // PENTING: Ganti URL ini kalau sudah deploy ke AWS (http://IVP4_PUBLIC:3000)
 // Untuk sekarang local dev:
 const api = axios.create({
-  // baseURL: "https://api.gethire.studio",
   baseURL: "https://api.gethire.studio",
 });
 
