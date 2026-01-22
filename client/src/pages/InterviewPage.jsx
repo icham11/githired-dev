@@ -559,25 +559,35 @@ const InterviewPage = () => {
                 >
                   {messages.filter((m) => m.role === "assistant").length >=
                   4 ? (
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            "End session and generate report? This cannot be undone.",
-                          )
-                        ) {
-                          dispatch(endInterview(sessionId));
-                        }
-                      }}
-                      variant="danger"
-                      className="py-4 px-6 h-[60px] rounded-xl flex items-center justify-center bg-red-500 hover:bg-red-600 text-white w-full"
-                    >
-                      <span className="mr-2 font-bold">
-                        END SESSION & GET SCORE
-                      </span>
-                      <StopCircle size={20} />
-                    </Button>
+                    <div className="w-full flex gap-4">
+                      <Button
+                        type="button"
+                        onClick={() => setInput("")}
+                        variant="secondary"
+                        className="py-4 px-6 h-[60px] rounded-xl flex items-center justify-center flex-1"
+                      >
+                        <span className="font-bold">CONTINUE</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              "End session and generate report? This cannot be undone.",
+                            )
+                          ) {
+                            dispatch(endInterview(sessionId));
+                          }
+                        }}
+                        variant="danger"
+                        className="py-4 px-6 h-[60px] rounded-xl flex items-center justify-center bg-red-500 hover:bg-red-600 text-white flex-1"
+                      >
+                        <span className="mr-2 font-bold">
+                          END SESSION & GET SCORE
+                        </span>
+                        <StopCircle size={20} />
+                      </Button>
+                    </div>
                   ) : (
                     <>
                       <div className="flex-1 relative">

@@ -1,0 +1,24 @@
+<svg width="192" height="192" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" fill="none"/>
+  <!-- Trophy Icon -->
+  <g transform="translate(96, 96)">
+    <!-- Cup body -->
+    <path d="M -30 -20 L -30 20 Q 0 40 30 20 L 30 -20 Z" fill="#D4AF37" stroke="#D4AF37" stroke-width="2" stroke-linejoin="round"/>
+    <!-- Cup rim -->
+    <ellipse cx="0" cy="-20" rx="30" ry="12" fill="#D4AF37"/>
+    <!-- Left handle -->
+    <path d="M 30 0 Q 50 0 50 20 Q 50 35 30 35" fill="none" stroke="#D4AF37" stroke-width="3" stroke-linecap="round"/>
+    <!-- Right handle -->
+    <path d="M -30 0 Q -50 0 -50 20 Q -50 35 -30 35" fill="none" stroke="#D4AF37" stroke-width="3" stroke-linecap="round"/>
+    <!-- Base -->
+    <rect x="-35" y="35" width="70" height="8" fill="#D4AF37" rx="2"/>
+    <!-- Stand -->
+    <rect x="-20" y="43" width="40" height="25" fill="#D4AF37" rx="3"/>
+    <!-- Highlight on cup -->
+    <ellipse cx="-15" cy="-10" rx="8" ry="6" fill="#FFFFFF" opacity="0.3"/>
+    <!-- Star on cup -->
+    <g transform="translate(0, 5)">
+      <polygon points="0,-8 2,-2 8,-2 3,2 5,8 0,4 -5,8 -3,2 -8,-2 -2,-2" fill="#FFFFFF" opacity="0.8"/>
+    </g>
+  </g>
+</svg>

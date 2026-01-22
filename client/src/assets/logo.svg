@@ -1,0 +1,30 @@
+<svg width="1000" height="1000" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+ <g class="layer">
+  <title>GitHired Logo</title>
+  <g id="logo-group" transform="translate(25, 25)">
+   <g id="logo-icon" transform="translate(37.5, 0)">
+    <path d="m37.5,0l37.5,30l-15,0l0,20q-22.5,10 -45,0l0,-20l-15,0l37.5,-30z" fill="#D4AF37" id="svg_4"/>
+    <path d="m37.5,10l17.5,15l-7.5,0l0,15q-10,5 -20,0l0,-15l-7.5,0l17.5,-15z" fill="#FFFFFF" id="svg_5" opacity="0.2"/>
+    <circle cx="25" cy="45" fill="#FFFFFF" id="svg_6" r="8"/>
+    <circle cx="50" cy="45" fill="#FFFFFF" id="svg_7" r="8"/>
+    <circle cx="25" cy="45" fill="#1F2937" id="svg_8" r="4"/>
+    <circle cx="50" cy="45" fill="#1F2937" id="svg_9" r="4"/>
+    <path d="m22,45l6,0m-3,-3l0,6" id="svg_10" opacity="0.5" stroke="#1F2937" stroke-width="0.5"/>
+    <path d="m47,45l6,0m-3,-3l0,6" id="svg_11" opacity="0.5" stroke="#1F2937" stroke-width="0.5"/>
+    <rect fill="#FFFFFF" height="25" id="svg_12" rx="7.5" width="15" x="30" y="55"/>
+    <path d="m30,65l15,0m-15,5l15,0m-15,5l15,0" id="svg_13" stroke="#1F2937" stroke-width="0.5"/>
+    <path d="m37.5,80l0,10m-12.5,0l25,0" id="svg_14" stroke="#1F2937" stroke-width="0.5" stroke-linecap="round"/>
+    <path d="m5,55l-5,15l15,10l0,-20l-10,-5z" fill="#D4AF37" id="svg_15"/>
+    <path d="m5,55l10,10l-10,10" fill="none" id="svg_16" stroke="#D4AF37" stroke-width="1"/>
+    <path d="m70,55l5,15l-15,10l0,-20l10,-5z" fill="#D4AF37" id="svg_17"/>
+    <path d="m70,55l-10,10l10,10" fill="none" id="svg_18" stroke="#D4AF37" stroke-width="1"/>
+   </g>
+   <g id="logo-text" transform="translate(0, 125)">
+    <text font-family="'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="28" font-weight="700" id="svg_20" text-anchor="middle" x="75" y="0">
+     <tspan fill="#FFFFFF" id="svg_21">Git</tspan>
+     <tspan fill="#D4AF37" id="svg_22">Hired</tspan>
+    </text>
+   </g>
+  </g>
+ </g>
+</svg>
