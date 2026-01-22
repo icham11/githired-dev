@@ -118,7 +118,7 @@ const InterviewPage = () => {
     }
   }, [messages]);
 
-  // Auto play TTS for latest assistant message using Web Speech API
+  // Auto play TTS for latest assistant message using Groq Orpheus
   useEffect(() => {
     if (!messages.length) return;
     const lastAssistantIndex = [...messages]
@@ -136,50 +136,26 @@ const InterviewPage = () => {
 
       console.log("🔊 Playing TTS for:", text.substring(0, 50) + "...");
 
-      // Use browser's Speech Synthesis API (free, no API needed)
-      if ("speechSynthesis" in window) {
-        // Cancel any ongoing speech
-        window.speechSynthesis.cancel();
-
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = language === "Indonesian" ? "id-ID" : "en-US";
-        utterance.rate = 1.0; // Normal speed
-        utterance.pitch = 1.0; // Normal pitch
-        utterance.volume = 1.0; // Full volume
-
-        // Try to use a better voice if available
-        const voices = window.speechSynthesis.getVoices();
-        const preferredVoice =
-          voices.find(
-            (voice) =>
-              voice.lang.startsWith(language === "Indonesian" ? "id" : "en") &&
-              (voice.name.includes("Google") || voice.name.includes("Premium")),
-          ) ||
-          voices.find((voice) =>
-            voice.lang.startsWith(language === "Indonesian" ? "id" : "en"),
+      // Use ElevenLabs API for high quality voice
+      (async () => {
+        try {
+          console.log("📡 Calling ElevenLabs TTS API...");
+          const res = await api.post(
+            "/tts",
+            { text },
+            { responseType: "blob" },
           );
-
-        if (preferredVoice) {
-          utterance.voice = preferredVoice;
+          console.log("✅ TTS response received, creating audio...");
+          const blob = res.data;
+          const url = URL.createObjectURL(blob);
+          const audio = new Audio(url);
+          await audio.play();
+          console.log("🎵 Audio playing!");
+        } catch (err) {
+          console.error("❌ TTS playback failed:", err);
+          console.error("Error details:", err.response?.data || err.message);
         }
-
-        utterance.onstart = () => {
-          console.log("🎵 Speech started!");
-        };
-
-        utterance.onend = () => {
-          console.log("✅ Speech finished!");
-        };
-
-        utterance.onerror = (event) => {
-          console.error("❌ Speech error:", event.error);
-        };
-
-        window.speechSynthesis.speak(utterance);
-        console.log("🎤 Using Web Speech API for TTS");
-      } else {
-        console.warn("⚠️ Speech Synthesis not supported in this browser");
-      }
+      })();
     }
   }, [messages, language]);
 
