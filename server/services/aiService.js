@@ -229,7 +229,7 @@ const generateInterviewResponse = async (
 const evaluateInterview = async (chatHistory, role, language = "English") => {
   if (!groq) return { score: 0, feedback: "API Key missing" };
 
-  const prompt = `You are an EXPERT TECHNICAL EVALUATOR and Senior Engineer. Your job is to provide BRUTALLY HONEST yet CONSTRUCTIVE feedback.
+  const prompt = `You are an EXPERT TECHNICAL EVALUATOR, Communication Coach, and Senior Engineer. Your job is to provide BRUTALLY HONEST yet CONSTRUCTIVE feedback on BOTH technical skills AND communication abilities.
 
   *** CRITICAL LANGUAGE INSTRUCTION ***
   You MUST write the entire "feedback" value in ${language}.
@@ -239,40 +239,82 @@ const evaluateInterview = async (chatHistory, role, language = "English") => {
   Chat History:
   ${JSON.stringify(chatHistory)}
 
-  **SCORING CRITERIA (EXTREMELY STRICT)**:
-  Evaluate across 5 dimensions:
-  1. **Technical Accuracy (40%)**: Were answers factually correct? Penalize vagueness heavily.
-  2. **Depth & Nuance (30%)**: Did they understand edge cases, trade-offs, and real-world implications?
-  3. **Communication (15%)**: Could they explain clearly? No buzzwords without substance.
-  4. **Problem-Solving (10%)**: When stuck, did they reason through the problem?
-  5. **Growth Mindset (5%)**: Did they ask clarifying questions or acknowledge gaps?
+  **COMPREHENSIVE SCORING CRITERIA (EXTREMELY STRICT)**:
+  
+  === TECHNICAL DIMENSION (40%) ===
+  1. **Technical Accuracy (20%)**: Were answers factually correct? Penalize vagueness heavily.
+  2. **Depth & Nuance (20%)**: Edge cases, trade-offs, real-world implications? System-level thinking?
+  
+  === COMMUNICATION DIMENSION (35%) ===
+  3. **Clarity & Articulation (15%)**:
+     - Did they explain concepts simply and logically?
+     - Were explanations organized with clear structure?
+     - Penalize: rambling, jargon overload, unclear transitions
+     - Reward: step-by-step breakdown, use of analogies, examples
+  
+  4. **Listening & Engagement (10%)**:
+     - Did they ask clarifying questions?
+     - Acknowledge gaps or uncertainties?
+     - Respond to interviewer's hints/corrections?
+     - OR: Did they talk past the interviewer, ignore feedback, or stay stuck?
+  
+  5. **Presence & Confidence (10%)**:
+     - Do responses show conviction or hesitation/self-doubt?
+     - Can they defend their reasoning or do they back down too easily?
+     - Do they own mistakes or blame external factors?
+  
+  === SOFT SKILLS (25%) ===
+  6. **Problem-Solving Approach (15%)**: When stuck, do they think out loud, ask for help, or go silent?
+  
+  7. **Growth Mindset (10%)**: Do they see feedback as learning or as criticism?
   
   **STRICT SCORING SCALE**:
-  - 0-30: Critical gaps. Missing fundamentals. Needs major rework.
-  - 31-50: Below average. Shaky on key concepts. Significant effort needed.
-  - 51-70: Average. Knows basics, but lacks depth and nuance for senior roles.
-  - 71-85: Good. Solid understanding with minor gaps. Production-ready foundation.
-  - 86-95: Very Strong. Deep knowledge, excellent reasoning, few weaknesses.
-  - 96-100: Expert-level. Exceptional depth, system thinking, seasoned perspective.
+  - 0-30: Critical gaps in both technical AND communication. Hard to work with. Major rework needed.
+  - 31-50: Below average overall. Shaky concepts + poor articulation. Struggles to convey knowledge.
+  - 51-70: Average. Decent fundamentals but communication is unclear or defensive. Senior roles: too junior.
+  - 71-85: Good. Solid technical + clear communication. Minor gaps in depth or delivery.
+  - 86-95: Very Strong. Deep technical knowledge + excellent communication. Mentor-quality.
+  - 96-100: Expert-level. Exceptional in all dimensions. Ready for leadership.
   
-  **FEEDBACK FORMAT**:
-  Write structured feedback in ${language}:
+  **DETAILED FEEDBACK FORMAT** (in ${language}):
   
-  1. **Strengths**: What they did well (be specific with examples from chat).
-  2. **Critical Gaps**: What they struggled with and why it matters in real systems.
-  3. **Specific Learning Paths**:
-     - Recommend 3-5 concrete concepts, patterns, or resources to study.
-     - Example: "Study: Event-Driven Architecture patterns, Message Queue trade-offs, Rate Limiting strategies"
-  4. **Actionable Next Steps**: What to practice before next interview.
-  5. **Final Note**: Encouraging but honest assessment of their level.
+  **[1] TECHNICAL ASSESSMENT**
+  - Strengths: Specific technical competencies shown with chat examples
+  - Gaps: Misconceptions or weak areas with impact analysis
+  
+  **[2] COMMUNICATION ASSESSMENT** (NEW - Very Important!)
+  - Clarity Score (0-10): How well did they explain concepts?
+    Example: "8/10 - Explained REST principles clearly with examples, but struggled with OAuth nuances"
+  - Listening/Engagement (0-10): Did they engage genuinely with the interviewer?
+    Example: "6/10 - Asked some clarifying questions, but defensive when corrected"
+  - Presence & Confidence (0-10): Conviction and ownership of ideas?
+    Example: "7/10 - Generally confident, but second-guessed themselves under pressure"
+  
+  - **Communication Feedback**: Specific observations and improvement areas
+    Example: "You explain architecture well step-by-step, but rush through edge cases. Slow down and use diagrams (even verbal ones) to map trade-offs."
+  
+  **[3] RECOMMENDED LEARNING PATHS**:
+  - 3-5 technical areas to study
+  - 2-3 communication/presentation skills to work on
+  
+  **[4] ACTIONABLE NEXT STEPS**:
+  What to practice before next interview (technical + soft skills)
+  
+  **[5] FINAL ASSESSMENT**:
+  Honest summary: level, readiness, 30-day improvement plan
   
   Return ONLY a JSON object with this structure:
   {
-    "score": <number 0-100>,
-    "feedback": "<detailed, structured feedback in ${language}>"
+    "score": <overall number 0-100>,
+    "feedback": "<comprehensive feedback covering technical, communication, and growth areas in ${language}>"
   }
   
-  *** CRITICAL: Make the feedback genuinely educational and specific. User should walk away with concrete learning goals. ***`;
+  *** CRITICAL: 
+  - Communication feedback must be SPECIFIC with chat examples
+  - Highlight both strengths AND weaknesses in communication
+  - Make actionable: "Practice explaining with whiteboard sketches" or "Listen for context clues"
+  - User should understand EXACTLY how to communicate better
+  ***`;
 
   try {
     const completion = await groq.chat.completions.create({
@@ -280,7 +322,7 @@ const evaluateInterview = async (chatHistory, role, language = "English") => {
         {
           role: "system",
           content:
-            "You are a critical HR examiner. Always respond with valid JSON only.",
+            "You are a critical Technical Interviewer AND Communication Coach. You evaluate both technical competence and soft skills. Always respond with valid JSON only. Be brutally honest but constructive.",
         },
         {
           role: "user",
@@ -289,7 +331,7 @@ const evaluateInterview = async (chatHistory, role, language = "English") => {
       ],
       model: "meta-llama/llama-4-scout-17b-16e-instruct",
       temperature: 0.7,
-      max_tokens: 1500,
+      max_tokens: 2000,
       response_format: { type: "json_object" },
     });
 

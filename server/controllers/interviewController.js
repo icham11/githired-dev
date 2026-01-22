@@ -141,11 +141,19 @@ const endSession = async (req, res) => {
       "Indonesian",
     );
 
-    // Save
-    session.score = evaluationEn.score;
-    session.feedback = evaluationEn.feedback;
-    session.feedback_en = evaluationEn.feedback;
-    session.feedback_id = evaluationId.feedback;
+    // Save with safe types
+    const safeScore =
+      typeof evaluationEn.score === "number"
+        ? evaluationEn.score
+        : parseInt(evaluationEn.score) || 0;
+
+    const toText = (val) =>
+      typeof val === "string" ? val : JSON.stringify(val || "");
+
+    session.score = safeScore;
+    session.feedback = toText(evaluationEn.feedback);
+    session.feedback_en = toText(evaluationEn.feedback);
+    session.feedback_id = toText(evaluationId.feedback);
     await session.save();
 
     res.json(session);
