@@ -57,14 +57,26 @@ const analyze = async (req, res) => {
     // 5. AI Analysis
     const analysisResult = await analyzeResume(resumeText);
 
-    // 6. Save to DB
+    // 6. Save to DB - ensure all fields are strings or numbers
     const resumeAnalysis = await ResumeAnalysis.create({
       userId: req.user.id,
       content: resumeText,
-      score: analysisResult.score,
-      feedback: analysisResult.feedback,
-      feedback_en: analysisResult.feedback_en,
-      feedback_id: analysisResult.feedback_id,
+      score:
+        typeof analysisResult.score === "number"
+          ? analysisResult.score
+          : parseInt(analysisResult.score) || 0,
+      feedback:
+        typeof analysisResult.feedback === "string"
+          ? analysisResult.feedback
+          : JSON.stringify(analysisResult.feedback || ""),
+      feedback_en:
+        typeof analysisResult.feedback_en === "string"
+          ? analysisResult.feedback_en
+          : JSON.stringify(analysisResult.feedback_en || ""),
+      feedback_id:
+        typeof analysisResult.feedback_id === "string"
+          ? analysisResult.feedback_id
+          : JSON.stringify(analysisResult.feedback_id || ""),
       fileUrl: fileUrl,
     });
 
