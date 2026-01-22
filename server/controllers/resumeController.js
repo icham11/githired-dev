@@ -1,61 +1,66 @@
+const pdf = require("pdf-parse");
 const { ResumeAnalysis, User } = require("../models");
 const { analyzeResume } = require("../services/aiService");
-const { uploadImageKit } = require("../utils/uploadUtils");
-const pdf = require("pdf-parse");
+const { uploadToImageKit } = require("../utils/uploadUtils");
 
 const analyze = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id);
-
     if (!user.isPro) {
       return res.status(403).json({
-        message:
-          "This feature is available for Pro users only. Please upgrade.",
+        message: "This feature is for Pro users only. Please upgrade.",
       });
     }
+
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
+
     const { buffer, originalname } = req.file;
 
+    // 1. Upload to ImageKit (async, don't block analysis if not strictly needed, but let's await it for data integrity)
+    // We wrap it in a try-catch so analysis can proceed even if upload fails (optional strategy, but consistent with "Scanner")
     let fileUrl = null;
     try {
-      const uploadResult = await uploadImageKit(buffer, originalname);
-      console.log("🚀 ~ analyze ~ uploadResult:", uploadResult);
-
+      const uploadResult = await uploadToImageKit(buffer, originalname);
       fileUrl = uploadResult.url;
     } catch (uploadError) {
-      console.error("Error uploading to ImageKit:", uploadError);
-      return res.status(500).json({ message: "Error uploading file" });
+      console.error("ImageKit Upload Failed:", uploadError);
+      // Continue with analysis, just won't have a URL
     }
 
+    // 2. Parse Text from Buffer
     let resumeText = "";
     try {
       const data = await pdf(buffer);
       resumeText = data.text;
-    } catch (pdfError) {
-      console.error("Error parsing PDF:", pdfError);
-      return res.status(400).json({ message: "Error parsing PDF file" });
+    } catch (parseError) {
+      return res.status(400).json({
+        message: "Invalid PDF file structure. Please upload a valid PDF.",
+      });
     }
 
+    // 3. AI Analysis
     const analysisResult = await analyzeResume(resumeText);
 
+    // 4. Save to DB
     const resumeAnalysis = await ResumeAnalysis.create({
       userId: req.user.id,
       content: resumeText,
       score: analysisResult.score,
-      feedback: analysisResult.feedback,
+      feedback: analysisResult.feedback, // Default
       feedback_en: analysisResult.feedback_en,
       feedback_id: analysisResult.feedback_id,
       fileUrl: fileUrl,
     });
+
     res.json(resumeAnalysis);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error analyzing resume" });
+    console.error("Resume Analysis Error:", error.message);
+    res.status(500).json({
+      message: "Error analyzing resume",
+    });
   }
 };
 
-module.exports = {
-  analyze,
-};
+module.exports = { analyze };
