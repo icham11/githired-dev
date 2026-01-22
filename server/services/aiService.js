@@ -68,39 +68,14 @@ if (process.env.GEMINI_API_KEY) {
   ai = new GoogleGenAI({ key: process.env.GEMINI_API_KEY });
 }
 
+// Helper: Sleep
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// Helper to clean JSON
 const cleanJSON = (text) => {
-  // Remove markdown code blocks first
-  // let cleaned = text
-  //   .replace(/```json/g, "")
-  //   .replace(/```/g, "")
-  //   .trim();
-
+  // Simple robust JSON extractor
   const match = text.match(/\{[\s\S]*\}/);
   return match ? match[0] : text;
-
-  const firstOpen = cleaned.indexOf("{");
-  if (firstOpen === -1) return cleaned;
-
-  let braceCount = 0;
-  let lastClose = -1;
-
-  for (let i = firstOpen; i < cleaned.length; i++) {
-    if (cleaned[i] === "{") braceCount++;
-    if (cleaned[i] === "}") braceCount--;
-
-    if (braceCount === 0) {
-      lastClose = i;
-      break;
-    }
-  }
-
-  if (lastClose !== -1) {
-    return cleaned.substring(firstOpen, lastClose + 1);
-  }
-
-  return cleaned;
 };
 
 // Helper: Universal Text Getter (Robust)
@@ -139,13 +114,30 @@ const analyzeResume = async (resumeText) => {
     }
     Resume: ${resumeText}`;
 
-    const result = await ai.models.generateContent({
-      model: "gemini-3-pro-preview",
-      config: { response_mime_type: "application/json" },
-      contents: prompt,
-    });
+    // Application limit handle by retrying
+    const callAI = async () => {
+      return await ai.models.generateContent({
+        model: "gemini-3-pro-preview",
+        config: { response_mime_type: "application/json" },
+        contents: prompt,
+      });
+    };
+
+    let result;
+    try {
+      result = await callAI();
+    } catch (e) {
+      if (e.status === 429) {
+        await sleep(2000);
+        result = await callAI();
+      } else {
+        throw e;
+      }
+    }
+
     console.log("🚀 ~ analyzeResume ~ result:", result);
 
+    // Safety: Response might stick to old 429 behavior or text structure
     const text = getText(result);
     let parsed;
     try {
@@ -168,44 +160,7 @@ const analyzeResume = async (resumeText) => {
     };
   } catch (error) {
     console.error("Resume AI Error:", error);
-    if (error.status === 429 || error.message.includes("429")) {
-      return {
-        score: 0,
-        feedback: "Server is busy. Please try again in a few seconds.",
-      };
-    }
-
-    if (error.message.includes("404")) {
-      try {
-        console.log("Fallback to gemini-flash-latest...");
-        const resRetry = await ai.models.generateContent({
-          model: "gemini-flash-latest",
-          contents: prompt,
-        });
-        const textRetry = getText(resRetry);
-        let parsedRetry;
-        try {
-          parsedRetry = JSON.parse(cleanJSON(textRetry));
-        } catch (e) {
-          return {
-            score: 70,
-            feedback: textRetry,
-            feedback_en: textRetry,
-            feedback_id: textRetry,
-          };
-        }
-        return {
-          score: parsedRetry.score,
-          feedback: parsedRetry.feedback_en,
-          feedback_en: parsedRetry.feedback_en,
-          feedback_id: parsedRetry.feedback_id,
-        };
-      } catch (e) {
-        console.error("Fallback Failed:", e);
-      }
-    }
-
-    return { score: 0, feedback: "Error analyzings resume." };
+    return { score: 0, feedback: "Error analyzing resume. Please try again." };
   }
 };
 
@@ -304,28 +259,21 @@ const generateInterviewResponse = async (
       }
     }
 
-    // Fallback to Flash Latest
-    try {
-      console.log("Fallback to gemini-flash-latest...");
-      return await callAI("gemini-3-pro-preview");
-    } catch (e) {
-      console.error("Interview All Failed:", e);
-      return { message: "Error: " + e.message, isCorrect: false };
-    }
+    return { message: "Error: " + error.message, isCorrect: false };
   }
 };
 
 const evaluateInterview = async (chatHistory, role, language = "English") => {
   if (!ai) return { score: 0, feedback: "API Key missing" };
-  const prompt = `You are a CRITICAL HR EXAMINER. Evaluate this interview session.
-  
+  const prompt = `You are a CRITICAL HR EXAMINER. Evaluate this interview session and return the result in JSON.
+
+  *** CRITICAL LANGUAGE INSTRUCTION ***
+  You MUST write the entire "feedback" value in ${language}.
+  If the target language is "Indonesian", you MUST translate your thoughts and output into formal Bahasa Indonesia (Bahasa Baku).
+  Do NOT output English in the "feedback" field.
+
   Chat History:
   ${JSON.stringify(chatHistory)}
-
-  **LANGUAGE REQUIREMENT**:
-  You MUST write the entire "feedback" value in ${language}. 
-  Even if the Chat History is in English, you MUST translate your evaluation to ${language}.
-  If the language is "Indonesian", use formal Indonesian (Bahasa Indonesia yang baku dan profesional).
 
   **SCORING CRITERIA (BE STRICT)**:
   - **Precision**: Did they answer specific technical details or just give vague concepts? Penalize vague answers.
@@ -343,11 +291,12 @@ const evaluateInterview = async (chatHistory, role, language = "English") => {
     "score": <number 0-100>,
     "feedback": "<concise feedback in ${language} on where they failed and where they succeeded>"
   }
-   *** REMEMBER: THE FEEDBACK MUST BE IN ${language} ***`;
+  
+  *** REMEMBER: THE FEEDBACK MUST BE IN ${language} ***`;
 
   try {
     const result = await ai.models.generateContent({
-      model: "gemini-2.0-flash-exp",
+      model: "gemini-3-pro-preview",
       config: { response_mime_type: "application/json" },
       contents: prompt,
     });
@@ -361,7 +310,7 @@ const evaluateInterview = async (chatHistory, role, language = "English") => {
       error.message.includes("503")
     ) {
       try {
-        console.log("Evaluation Fallback to gemini-flash-latest...");
+        console.log("Evaluation Fallback (Retrying)...");
         const resRetry = await ai.models.generateContent({
           model: "gemini-3-pro-preview",
           contents: prompt,
