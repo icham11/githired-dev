@@ -315,12 +315,17 @@ const generateInterviewResponse = async (
   }
 };
 
-const evaluateInterview = async (chatHistory, role) => {
+const evaluateInterview = async (chatHistory, role, language = "English") => {
   if (!ai) return { score: 0, feedback: "API Key missing" };
   const prompt = `You are a CRITICAL HR EXAMINER. Evaluate this interview session.
   
   Chat History:
   ${JSON.stringify(chatHistory)}
+
+  **LANGUAGE REQUIREMENT**:
+  You MUST write the entire "feedback" value in ${language}. 
+  Even if the Chat History is in English, you MUST translate your evaluation to ${language}.
+  If the language is "Indonesian", use formal Indonesian (Bahasa Indonesia yang baku dan profesional).
 
   **SCORING CRITERIA (BE STRICT)**:
   - **Precision**: Did they answer specific technical details or just give vague concepts? Penalize vague answers.
@@ -336,7 +341,7 @@ const evaluateInterview = async (chatHistory, role) => {
   Return ONLY a JSON object with this structure:
   {
     "score": <number 0-100>,
-    "feedback": "<concise feedback on where they failed and where they succeeded>"
+    "feedback": "<concise feedback in ${language} on where they failed and where they succeeded>"
   }
   Do not include markdown formatting or extra text.`;
 
