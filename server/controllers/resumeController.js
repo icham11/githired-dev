@@ -19,7 +19,7 @@ const analyze = async (req, res) => {
     const { buffer, originalname } = req.file;
 
     // 1. Upload to ImageKit (async, don't block analysis if not strictly needed, but let's await it for data integrity)
-
+    // We wrap it in a try-catch so analysis can proceed even if upload fails (optional strategy, but consistent with "Scanner")
     let fileUrl = null;
     try {
       const uploadResult = await uploadToImageKit(buffer, originalname);
@@ -32,9 +32,14 @@ const analyze = async (req, res) => {
     // 2. Parse Text from Buffer
     let resumeText = "";
     try {
+      if (typeof pdf !== "function") {
+        console.error("PDF Parser is not a function:", typeof pdf, pdf);
+        throw new Error("PDF Parser configuration error");
+      }
       const data = await pdf(buffer);
       resumeText = data.text;
     } catch (parseError) {
+      console.error("Error parsing PDF:", parseError);
       return res.status(400).json({
         message: "Invalid PDF file structure. Please upload a valid PDF.",
       });
