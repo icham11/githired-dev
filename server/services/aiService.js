@@ -30,24 +30,67 @@ const analyzeResume = async (resumeText) => {
   if (!groq) return { score: 0, feedback: "API Key missing." };
 
   try {
-    const prompt = `You are an expert HR . Analyze this resume and provide detailed feedback. Return your response in valid JSON format with this exact structure:
-    {
-      "score": <number between 0-100>,
-      "feedback_en": "<detailed English feedback>",
-      "feedback_id": "<detailed Indonesian feedback>"
-    }
-    
-    Resume Content:
-    ${resumeText}
-    
-    Provide specific, actionable feedback about strengths and areas for improvement.`;
+    const prompt = `You are a SENIOR ATS (Applicant Tracking System) Specialist and Executive Recruiter with 15+ years of experience in Fortune 500 companies. Your task is to analyze this resume against industry best practices and provide a COMPREHENSIVE, DATA-DRIVEN assessment.
+
+**EVALUATION FRAMEWORK** (Based on ATS Research & Hiring Manager Insights):
+
+1. **ATS Compatibility (25 points)**
+   - Clean formatting (no tables, columns, headers/footers)
+   - Standard section headers (Experience, Education, Skills)
+   - Keyword density matching job description standards
+   - File structure & readability
+   
+2. **Content Quality (35 points)**
+   - Quantifiable achievements (numbers, percentages, metrics)
+   - Action verbs (Led, Developed, Increased, Reduced)
+   - Relevance to target role
+   - Clarity & conciseness (no fluff or vague statements)
+   
+3. **Professional Impact (25 points)**
+   - Career progression/growth trajectory
+   - Technical depth (specific tools, frameworks, methodologies)
+   - Problem-solving examples (challenges solved)
+   - Leadership & collaboration signals
+   
+4. **Presentation & Polish (15 points)**
+   - Grammar & spelling perfection
+   - Consistent formatting
+   - Appropriate length (1-2 pages)
+   - Professional tone
+
+**SCORING SCALE**:
+- 90-100: Elite (Top 5%) - Passes ATS + impresses hiring managers
+- 80-89: Strong (Top 20%) - High ATS match, solid content
+- 70-79: Good (Top 40%) - Decent but needs optimization
+- 60-69: Fair (Top 60%) - Missing key elements, moderate ATS risk
+- 40-59: Weak (Bottom 40%) - Major gaps, likely filtered by ATS
+- 0-39: Critical (Bottom 20%) - Fails basic ATS criteria
+
+**ANALYSIS REQUIREMENTS**:
+1. Calculate exact score based on the framework above
+2. Identify 3-5 SPECIFIC strengths with examples from the resume
+3. Identify 3-5 CRITICAL improvements with actionable fixes
+4. Provide ATS optimization tips
+5. Give role-specific advice if career focus is clear
+
+**Resume Content:**
+${resumeText}
+
+**OUTPUT FORMAT (STRICT JSON)**:
+{
+  "score": <exact number 0-100 based on framework>,
+  "feedback_en": "<Detailed English analysis following the structure: [Score Breakdown] → [Strengths with examples] → [Critical Improvements] → [ATS Optimization] → [Action Plan]>",
+  "feedback_id": "<Same analysis in Indonesian>"
+}
+
+BE BRUTALLY HONEST. Reject generic resumes. Reward quantifiable impact. Reference real ATS filtering criteria.`;
 
     const completion = await groq.chat.completions.create({
       messages: [
         {
           role: "system",
           content:
-            "You are an expert HR analyst. Always respond with valid JSON only.",
+            "You are a SENIOR ATS Specialist and Executive Recruiter. Analyze resumes with extreme precision using industry-validated criteria. Always respond with valid JSON only. Be honest and data-driven.",
         },
         {
           role: "user",
@@ -55,8 +98,8 @@ const analyzeResume = async (resumeText) => {
         },
       ],
       model: "meta-llama/llama-4-scout-17b-16e-instruct",
-      temperature: 0.7,
-      max_tokens: 2000,
+      temperature: 0.5,
+      max_tokens: 3000,
       response_format: { type: "json_object" },
     });
 
