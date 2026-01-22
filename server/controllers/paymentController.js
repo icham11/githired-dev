@@ -114,7 +114,75 @@ const handleNotification = async (req, res, next) => {
   }
 };
 
+// Manual confirmation endpoint (useful for local dev/sandbox where Midtrans callback may not reach localhost)
+const confirmPayment = async (req, res, next) => {
+  try {
+    const { orderId } = req.body;
+    if (!orderId) {
+      return res.status(400).json({ message: "orderId is required" });
+    }
+
+    // Check stored transaction
+    const transaction = await Transaction.findOne({ where: { orderId } });
+    if (!transaction) {
+      return res.status(404).json({ message: "Transaction not found" });
+    }
+
+    // Query Midtrans for actual status (server-side verification)
+    let statusResponse;
+    try {
+      statusResponse = await snap.transaction.status(orderId);
+    } catch (err) {
+      console.error("Midtrans status check failed:", err);
+      return res
+        .status(500)
+        .json({ message: "Failed to verify payment status" });
+    }
+
+    const transactionStatus = statusResponse.transaction_status;
+    const fraudStatus = statusResponse.fraud_status;
+
+    let newStatus = "pending";
+
+    if (transactionStatus === "capture") {
+      if (fraudStatus === "challenge") {
+        newStatus = "challenge";
+      } else if (fraudStatus === "accept") {
+        newStatus = "success";
+      }
+    } else if (transactionStatus === "settlement") {
+      newStatus = "success";
+    } else if (
+      transactionStatus === "cancel" ||
+      transactionStatus === "deny" ||
+      transactionStatus === "expire"
+    ) {
+      newStatus = "failed";
+    } else if (transactionStatus === "pending") {
+      newStatus = "pending";
+    }
+
+    // Update transaction
+    transaction.status = newStatus;
+    await transaction.save();
+
+    // Upgrade user if success
+    if (newStatus === "success") {
+      const user = await User.findByPk(transaction.userId);
+      if (user) {
+        user.isPro = true;
+        await user.save();
+      }
+    }
+
+    return res.json({ status: newStatus });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   initiatePayment,
   handleNotification,
+  confirmPayment,
 };
