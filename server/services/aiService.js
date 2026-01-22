@@ -1,71 +1,9 @@
-// const { GoogleGenAI } = require("@google/genai");
+const Groq = require("groq-sdk");
 
-// let ai = null;
-// if (process.env.GEMINI_API_KEY) {
-//   ai = new GoogleGenAI({ key: process.env.GEMINI_API_KEY });
-// }
+let groq = null;
 
-// const cleaneJSON = (text) => {
-//   const match = text.match(/\{[\s\S]*\}/);
-//   return match ? match[0] : text;
-// };
-
-// const getText = (result) => {
-//   if (!result) return "";
-//   if (typeof result === "string") return result.text;
-//   if (typeof result === "function" && result.text) return result.text();
-//   if (result.response && typeof result.response.text === "function")
-//     return result.response.text();
-//   if (result.candidates?.[0]?.content?.parts?.[0].text)
-//     return result.candidates[0].content.parts[0].text;
-//   return "";
-// };
-
-// const generateInterviewResponse = async (chatHistory, role) => {
-//   if (!ai) throw new Error("AI service not initialized");
-
-//   const systemInstruction = `You are a SENIOR Technical Recruiter for ${role}.
-//   Be STRICT and PROFESSIONAL.
-//   Always ask ONE technical question based on the candidate's last answer.
-//   Return JSON: { "message": "Your question", "isCorrect": boolean }`;
-
-//   const contents = [
-//     { role: "user", parts: [{ text: `System: ${systemInstruction}` }] },
-//     { role: "model", parts: [{ text: "Understood." }] },
-//     ...chatHistory.map((msg) => ({
-//       role: msg.role === "assistant" ? "model" : "user",
-//       parts: [{ text: msg.content }],
-//     })),
-//   ];
-
-//   try {
-//     const result = await ai.models.generateContent({
-//       model: "gemini-3-pro-preview",
-//       contents: contents,
-//       config: { response_mime_type: "application/json" },
-//     });
-//     const textResult = getText(result);
-//     const cleaned = cleaneJSON(textResult);
-//     return JSON.parse(cleaned);
-//   } catch (error) {
-//     console.error("AI error", error);
-//     return {
-//       message: "AI sedang sibuk, silakan coba lagi nanti.",
-//       isCorrect: true,
-//     };
-//   }
-// };
-
-// module.exports = {
-//   generateInterviewResponse,
-// };
-
-const { GoogleGenAI } = require("@google/genai");
-
-let ai = null;
-
-if (process.env.GEMINI_API_KEY) {
-  ai = new GoogleGenAI({ key: process.env.GEMINI_API_KEY });
+if (process.env.GROQ_API_KEY) {
+  groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 }
 
 // Helper: Sleep
@@ -73,28 +11,12 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Helper to clean JSON
 const cleanJSON = (text) => {
-  // Simple robust JSON extractor
   const match = text.match(/\{[\s\S]*\}/);
   return match ? match[0] : text;
 };
 
-// Helper: Universal Text Getter (Robust)
-const getText = (result) => {
-  if (!result) return "";
-  if (typeof result.text === "function") return result.text();
-  if (typeof result.text === "string") return result.text;
-  if (result.response && typeof result.response.text === "function") {
-    return result.response.text();
-  }
-  if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
-    return result.candidates[0].content.parts[0].text;
-  }
-  return "";
-};
-
 const analyzeResume = async (resumeText) => {
   if (process.env.USE_MOCK_AI === "true") {
-    // Mock Data
     return {
       score: 88,
       feedback: "Mock Mode",
@@ -103,43 +25,42 @@ const analyzeResume = async (resumeText) => {
     };
   }
 
-  if (!ai) return { score: 0, feedback: "API Key missing." };
+  if (!groq) return { score: 0, feedback: "API Key missing." };
 
   try {
-    const prompt = `You are an expert HR. Analyze this resume. Return JSON:
+    const prompt = `You are an expert HR. Analyze this resume and provide detailed feedback. Return your response in valid JSON format with this exact structure:
     {
-      "score": <0-100>,
-      "feedback_en": "<English feedback>",
-      "feedback_id": "<Indonesian feedback>"
+      "score": <number between 0-100>,
+      "feedback_en": "<detailed English feedback>",
+      "feedback_id": "<detailed Indonesian feedback>"
     }
-    Resume: ${resumeText}`;
+    
+    Resume Content:
+    ${resumeText}
+    
+    Provide specific, actionable feedback about strengths and areas for improvement.`;
 
-    // Application limit handle by retrying
-    const callAI = async () => {
-      return await ai.models.generateContent({
-        model: "gemini-3-pro-preview",
-        config: { response_mime_type: "application/json" },
-        contents: prompt,
-      });
-    };
+    const completion = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are an expert HR analyst. Always respond with valid JSON only.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
+      temperature: 0.7,
+      max_tokens: 2000,
+      response_format: { type: "json_object" },
+    });
 
-    let result;
-    try {
-      result = await callAI();
-    } catch (e) {
-      if (e.status === 429) {
-        await sleep(2000);
-        result = await callAI();
-      } else {
-        throw e;
-      }
-    }
-
-    console.log("🚀 ~ analyzeResume ~ result:", result);
-
-    // Safety: Response might stick to old 429 behavior or text structure
-    const text = getText(result);
+    const text = completion.choices[0]?.message?.content || "{}";
     let parsed;
+
     try {
       parsed = JSON.parse(cleanJSON(text));
     } catch (e) {
@@ -153,14 +74,21 @@ const analyzeResume = async (resumeText) => {
     }
 
     return {
-      score: parsed.score,
-      feedback: parsed.feedback_en,
-      feedback_en: parsed.feedback_en,
-      feedback_id: parsed.feedback_id,
+      score: parsed.score || 70,
+      feedback: parsed.feedback_en || parsed.feedback || "Analysis completed",
+      feedback_en:
+        parsed.feedback_en || parsed.feedback || "Analysis completed",
+      feedback_id: parsed.feedback_id || parsed.feedback || "Analisis selesai",
     };
   } catch (error) {
     console.error("Resume AI Error:", error);
-    return { score: 0, feedback: "Error analyzing resume. Please try again." };
+    return {
+      score: 0,
+      feedback: "Error analyzing resume. Please try again.",
+      feedback_en: "Error analyzing resume. Please try again.",
+      feedback_id:
+        "Terjadi kesalahan saat menganalisis resume. Silakan coba lagi.",
+    };
   }
 };
 
@@ -170,9 +98,8 @@ const generateInterviewResponse = async (
   difficulty,
   language,
 ) => {
-  if (!ai) return { message: "API Key missing", isCorrect: false };
+  if (!groq) return { message: "API Key missing", isCorrect: false };
 
-  // New SDK Format: contents = [{ role: 'user'|'model', parts: [{ text: ... }] }]
   const systemInstruction = `You are a SENIOR Technical Recruiter for the role of ${role}. 
   Your demeanor is PROFESSIONAL, STRICT, BUT FAIR. You value depth over breadth.
   
@@ -184,7 +111,6 @@ const generateInterviewResponse = async (
   - **Brutally Honest**: If the user's answer is shallow or wrong, say it clearly (e.g., "That is incorrect/simplistic because..."). Do not sugarcoat bad technical answers.
   - **Dynamic**: Vary your questioning style (Scenario-based, Theory, System Design).
   
- 
   **SESSION FLOW**:
   1. **Phase 1 (Opening/First Question)**: 
      - Do NOT start with a generic "Hello [Name], nice to meet you."
@@ -204,67 +130,54 @@ const generateInterviewResponse = async (
   - Do NOT repeat the user's answer.
   - Keep responses concise but impactful.`;
 
-  const contents = [
+  const messages = [
     {
-      role: "user",
-      parts: [{ text: `System Instruction: ${systemInstruction}` }],
+      role: "system",
+      content: systemInstruction,
     },
-    { role: "model", parts: [{ text: "Understood." }] },
     ...chatHistory.map((msg) => ({
-      role: msg.role === "assistant" ? "model" : "user",
-      parts: [{ text: msg.content }],
+      role: msg.role === "assistant" ? "assistant" : "user",
+      content: msg.content,
     })),
   ];
 
-  const callAI = async (modelName, config = {}) => {
-    try {
-      const result = await ai.models.generateContent({
-        model: modelName,
-        config: config,
-        contents: contents,
-      });
-      const text = getText(result);
-      try {
-        return JSON.parse(cleanJSON(text));
-      } catch (e) {
-        console.warn("JSON Parse Failed, using raw text:", text);
-        return { message: text, isCorrect: true };
-      }
-    } catch (err) {
-      throw err;
-    }
-  };
-
   try {
-    return await callAI("gemini-3-pro-preview", {
-      response_mime_type: "application/json",
+    const completion = await groq.chat.completions.create({
+      messages: messages,
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
+      temperature: 0.8,
+      max_tokens: 1500,
+      response_format: { type: "json_object" },
     });
-  } catch (error) {
-    console.log(
-      `Interview Primary Error (${error.status || error.message})...`,
-    );
 
-    if (error.status === 429 || error.message.includes("429")) {
-      console.log("Rate Limit. Waiting 5s...");
-      await sleep(5000);
-      try {
-        return await callAI("gemini-3-pro-preview", {
-          response_mime_type: "application/json",
-        });
-      } catch (e) {
-        return {
-          message: "Server is busy (Rate Limit). Please wait 20s.",
-          isCorrect: false,
-        };
-      }
+    const text = completion.choices[0]?.message?.content || "{}";
+
+    try {
+      return JSON.parse(cleanJSON(text));
+    } catch (e) {
+      console.warn("JSON Parse Failed, using raw text:", text);
+      return { message: text, isCorrect: true };
+    }
+  } catch (error) {
+    console.error("Interview AI Error:", error);
+
+    if (error.message.includes("rate") || error.message.includes("429")) {
+      return {
+        message: "Server is busy. Please wait a moment and try again.",
+        isCorrect: false,
+      };
     }
 
-    return { message: "Error: " + error.message, isCorrect: false };
+    return {
+      message: "Error: Unable to generate response. Please try again.",
+      isCorrect: false,
+    };
   }
 };
 
 const evaluateInterview = async (chatHistory, role, language = "English") => {
-  if (!ai) return { score: 0, feedback: "API Key missing" };
+  if (!groq) return { score: 0, feedback: "API Key missing" };
+
   const prompt = `You are a CRITICAL HR EXAMINER. Evaluate this interview session and return the result in JSON.
 
   *** CRITICAL LANGUAGE INSTRUCTION ***
@@ -295,35 +208,34 @@ const evaluateInterview = async (chatHistory, role, language = "English") => {
   *** REMEMBER: THE FEEDBACK MUST BE IN ${language} ***`;
 
   try {
-    const result = await ai.models.generateContent({
-      model: "gemini-3-pro-preview",
-      config: { response_mime_type: "application/json" },
-      contents: prompt,
+    const completion = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a critical HR examiner. Always respond with valid JSON only.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
+      temperature: 0.7,
+      max_tokens: 1500,
+      response_format: { type: "json_object" },
     });
-    return JSON.parse(cleanJSON(getText(result)));
+
+    const text = completion.choices[0]?.message?.content || "{}";
+    return JSON.parse(cleanJSON(text));
   } catch (error) {
     console.error("Eval Error:", error);
-    // Fallback
-    if (
-      error.message.includes("404") ||
-      error.status === 429 ||
-      error.message.includes("503")
-    ) {
-      try {
-        console.log("Evaluation Fallback (Retrying)...");
-        const resRetry = await ai.models.generateContent({
-          model: "gemini-3-pro-preview",
-          contents: prompt,
-        });
-        const textRetry = getText(resRetry);
-        return JSON.parse(cleanJSON(textRetry));
-      } catch (e) {
-        console.error("Eval Fallback Failed:", e);
-      }
-    }
     return {
       score: 70,
-      feedback: "Evaluation Error (AI Busy). Please try again.",
+      feedback:
+        language === "Indonesian"
+          ? "Terjadi kesalahan saat evaluasi. Silakan coba lagi."
+          : "Evaluation Error. Please try again.",
     };
   }
 };
