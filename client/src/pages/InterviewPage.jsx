@@ -134,20 +134,26 @@ const InterviewPage = () => {
       const text = messages[lastAssistantIndex].content;
       lastSpokenIndex.current = lastAssistantIndex;
 
+      console.log("🔊 Playing TTS for:", text.substring(0, 50) + "...");
+
       // Fire and forget TTS fetch
       (async () => {
         try {
+          console.log("📡 Calling /tts API...");
           const res = await api.post(
             "/tts",
             { text },
             { responseType: "blob" },
           );
+          console.log("✅ TTS response received, creating audio...");
           const blob = res.data;
           const url = URL.createObjectURL(blob);
           const audio = new Audio(url);
-          audio.play();
+          await audio.play();
+          console.log("🎵 Audio playing!");
         } catch (err) {
-          console.error("TTS playback failed", err);
+          console.error("❌ TTS playback failed:", err);
+          console.error("Error details:", err.response?.data || err.message);
         }
       })();
     }
