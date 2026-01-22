@@ -37,6 +37,12 @@ const analyze = async (req, res) => {
       if (typeof pdfParser !== "function") {
         if (pdfParser.default && typeof pdfParser.default === "function") {
           pdfParser = pdfParser.default;
+        } else if (
+          pdfParser.PDFParse &&
+          typeof pdfParser.PDFParse === "function"
+        ) {
+          // Detected specific module structure on production
+          pdfParser = pdfParser.PDFParse;
         } else {
           console.error(
             "PDF Parser is not a function. Keys:",
