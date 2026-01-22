@@ -3,7 +3,7 @@ const router = express.Router();
 const authenticateToken = require("../middlewares/auth");
 const { synthesizeSpeech } = require("../services/aiService");
 
-// Generate TTS audio from text using Groq Orpheus or ElevenLabs
+// Generate TTS audio from text using Groq Orpheus
 router.post("/", authenticateToken, async (req, res) => {
   try {
     const { text } = req.body;
@@ -12,7 +12,7 @@ router.post("/", authenticateToken, async (req, res) => {
     }
 
     const buffer = await synthesizeSpeech(text);
-    res.set("Content-Type", "audio/mpeg"); // Both return MP3
+    res.set("Content-Type", "audio/wav"); // Groq returns WAV
     res.send(buffer);
   } catch (error) {
     console.error("TTS Error:", error);

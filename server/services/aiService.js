@@ -248,10 +248,10 @@ module.exports = {
   evaluateInterview,
 
   /**
-   * Text-to-Speech via Groq (Orpheus v1 English model).
-   * Returns audio buffer (MP3 format).
+   * Text-to-Speech via Groq Orpheus (Natural voice).
+   * Returns audio buffer (WAV format).
    */
-  synthesizeSpeechGroq: async (text, outputPath = null) => {
+  synthesizeSpeech: async (text, outputPath = null) => {
     if (!groq) {
       throw new Error("GROQ_API_KEY missing");
     }
@@ -260,33 +260,14 @@ module.exports = {
     }
 
     try {
-      const response = await groq.chat.completions.create({
-        messages: [
-          {
-            role: "user",
-            content: text,
-          },
-        ],
+      const wav = await groq.audio.speech.create({
         model: "canopylabs/orpheus-v1-english",
-        temperature: 1,
-        max_tokens: 1024,
-        top_p: 1,
-        stream: false,
-        modalities: ["audio"],
-        audio: {
-          voice: "autumn",
-          format: "mp3",
-        },
+        voice: "autumn",
+        response_format: "wav",
+        input: text,
       });
 
-      // Get audio data from response
-      const audioData = response.choices[0]?.message?.audio?.data;
-      if (!audioData) {
-        throw new Error("No audio data returned from Groq");
-      }
-
-      // Convert base64 to buffer
-      const buffer = Buffer.from(audioData, "base64");
+      const buffer = Buffer.from(await wav.arrayBuffer());
 
       if (outputPath) {
         const speechFile = path.resolve(outputPath);
@@ -296,15 +277,7 @@ module.exports = {
       return buffer;
     } catch (error) {
       console.error("Groq TTS Error:", error);
-      throw new Error("Failed to synthesize speech with Groq Orpheus");
+      throw new Error("Failed to synthesize speech with Groq");
     }
-  },
-
-  /**
-   * Text-to-Speech using Groq Orpheus.
-   * This is the main TTS function used by the app.
-   */
-  synthesizeSpeech: async (text, outputPath = null) => {
-    return module.exports.synthesizeSpeechGroq(text, outputPath);
   },
 };
