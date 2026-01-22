@@ -31,6 +31,7 @@ const register = async (req, res) => {
         id: newUser.id,
         username: newUser.username,
         email: newUser.email,
+        isPro: newUser.isPro,
       },
     });
   } catch (error) {
@@ -62,7 +63,12 @@ const login = async (req, res) => {
     res.json({
       message: "Login successful",
       token,
-      user: { id: user.id, username: user.username, email: user.email },
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        isPro: user.isPro,
+      },
     });
   } catch (error) {
     console.error(error);
