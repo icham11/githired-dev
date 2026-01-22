@@ -26,6 +26,14 @@ const InterviewSession = sequelize.define("InterviewSession", {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  feedback_en: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  feedback_id: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
 });
 
 module.exports = InterviewSession;

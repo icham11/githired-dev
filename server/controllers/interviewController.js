@@ -129,12 +129,23 @@ const endSession = async (req, res) => {
     // Parse history to send to AI
     const history = JSON.parse(session.chatHistory);
 
-    // Evaluate
-    const evaluation = await evaluateInterview(history, session.role);
+    // Evaluate in English & Indonesian
+    const evaluationEn = await evaluateInterview(
+      history,
+      session.role,
+      "English",
+    );
+    const evaluationId = await evaluateInterview(
+      history,
+      session.role,
+      "Indonesian",
+    );
 
     // Save
-    session.score = evaluation.score;
-    session.feedback = evaluation.feedback;
+    session.score = evaluationEn.score;
+    session.feedback = evaluationEn.feedback;
+    session.feedback_en = evaluationEn.feedback;
+    session.feedback_id = evaluationId.feedback;
     await session.save();
 
     res.json(session);
