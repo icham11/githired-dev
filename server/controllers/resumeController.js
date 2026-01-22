@@ -32,11 +32,24 @@ const analyze = async (req, res) => {
     // 2. Parse Text from Buffer
     let resumeText = "";
     try {
-      if (typeof pdf !== "function") {
-        console.error("PDF Parser is not a function:", typeof pdf, pdf);
-        throw new Error("PDF Parser configuration error");
+      let pdfParser = pdf;
+      // Handle ESM/CommonJS specific behavior on some environments (like the production server)
+      if (typeof pdfParser !== "function") {
+        if (pdfParser.default && typeof pdfParser.default === "function") {
+          pdfParser = pdfParser.default;
+        } else {
+          console.error(
+            "PDF Parser is not a function. Keys:",
+            Object.keys(pdfParser),
+          );
+          console.error("PDF Parser value:", pdfParser);
+          throw new Error(
+            "PDF Parser configuration error: unable to find parse function",
+          );
+        }
       }
-      const data = await pdf(buffer);
+
+      const data = await pdfParser(buffer);
       resumeText = data.text;
     } catch (parseError) {
       console.error("Error parsing PDF:", parseError);
