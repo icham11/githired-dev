@@ -6,7 +6,7 @@ import { clearInterview } from "../store/slices/interviewSlice";
 import Button from "./Button";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Crown, User, LogOut } from "lucide-react";
+import { Menu, X, Crown, Trophy, User, LogOut } from "lucide-react";
 
 const NavLink = ({ to, children }) => {
   const location = useLocation();

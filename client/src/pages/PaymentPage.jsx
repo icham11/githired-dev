@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import Navbar from "../components/Navbar";
 import Button from "../components/Button";
 import api from "../api";
+import { fetchCurrentUser } from "../store/slices/authSlice";
 
 const PaymentPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [processing, setProcessing] = useState(false);
 
   const [error, setError] = useState(null);
@@ -24,24 +27,30 @@ const PaymentPage = () => {
         window.snap.pay(token, {
           onSuccess: function (result) {
             console.log("Payment success:", result);
-            // Call backend to confirm & upgrade (useful when webhook cannot reach localhost)
             api
               .post("/payment/confirm", { orderId: result.order_id })
               .catch((err) => {
                 console.error("Confirm payment failed", err);
               })
-              .finally(() => {
+              .finally(async () => {
+                try {
+                  await dispatch(fetchCurrentUser());
+                } catch (err) {
+                  console.error("Failed to refresh user", err);
+                }
                 alert("Payment Successful! Welcome to the Elite Tier.");
                 navigate("/dashboard");
               });
           },
           onPending: function (result) {
             console.log("Payment pending:", result);
-            // Attempt confirm to fetch latest status
             api
               .post("/payment/confirm", { orderId: result.order_id })
               .catch(() => {})
-              .finally(() => {
+              .finally(async () => {
+                try {
+                  await dispatch(fetchCurrentUser());
+                } catch (_) {}
                 alert("Payment Pending. Please complete the transaction.");
                 navigate("/dashboard");
               });

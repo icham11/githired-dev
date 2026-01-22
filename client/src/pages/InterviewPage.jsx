@@ -50,6 +50,7 @@ const InterviewPage = () => {
   const [isMuted, setIsMuted] = useState(false);
   const messagesEndRef = useRef(null);
   const lastSpokenIndex = useRef(-1);
+  const currentAudioRef = useRef(null);
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -137,7 +138,13 @@ const InterviewPage = () => {
           console.log("✅ TTS response received, creating audio...");
           const blob = res.data;
           const url = URL.createObjectURL(blob);
+          // Stop any existing audio
+          if (currentAudioRef.current) {
+            currentAudioRef.current.pause();
+            URL.revokeObjectURL(currentAudioRef.current.src);
+          }
           const audio = new Audio(url);
+          currentAudioRef.current = audio;
           await audio.play();
           console.log("🎵 Audio playing!");
         } catch (err) {
@@ -146,7 +153,16 @@ const InterviewPage = () => {
         }
       })();
     }
-  }, [messages, language]);
+  }, [messages, language, isMuted]);
+
+  // Stop any playing audio when mute is enabled
+  useEffect(() => {
+    if (isMuted && currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      URL.revokeObjectURL(currentAudioRef.current.src);
+      currentAudioRef.current = null;
+    }
+  }, [isMuted]);
 
   const handleStartSession = async () => {
     // Validate role selection
@@ -173,8 +189,10 @@ const InterviewPage = () => {
       }
       // Seed initial greeting if chat history empty
       if (!messages.length) {
-        const greetEn = "Hi! I'm your interviewer. What should I call you before we begin?";
-        const greetId = "Halo! Saya pewawancara Anda. Boleh tahu nama Anda sebelum kita mulai?";
+        const greetEn =
+          "Hi! I'm your interviewer. What should I call you before we begin?";
+        const greetId =
+          "Halo! Saya pewawancara Anda. Boleh tahu nama Anda sebelum kita mulai?";
         dispatch(seedGreeting(language === "Indonesian" ? greetId : greetEn));
       }
     } else {
@@ -426,42 +444,6 @@ const InterviewPage = () => {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => {
-                    if (
-                      window.confirm(
-                        "Abort current simulation? Progress will be lost.",
-                      )
-                    ) {
-                      dispatch(endInterview(sessionId));
-                    }
-                  }}
-                  className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400 hover:text-red-400"
-                  title="End Session"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              {/* Chat Area */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-                {messages.length === 0 && (
-                  <div className="h-full flex flex-col items-center justify-center text-gray-500 opacity-50">
-                    <Bot size={48} className="mb-4" />
-                    <p>AI Interviewer connecting...</p>
-                  </div>
-                )}
-
-                {messages.map((msg, index) => (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                    key={index}
-                    className={`flex gap-4 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
-                  >
-                    <div
-                      className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setIsMuted((v) => !v)}
@@ -494,6 +476,46 @@ const InterviewPage = () => {
                     <X size={20} />
                   </button>
                 </div>
+              </div>
+
+              {/* Chat Area */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                {messages.length === 0 && (
+                  <div className="h-full flex flex-col items-center justify-center text-gray-500 opacity-50">
+                    <Bot size={48} className="mb-4" />
+                    <p>AI Interviewer connecting...</p>
+                  </div>
+                )}
+
+                {messages.map((msg, index) => (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    key={index}
+                    className={`flex gap-4 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
+                  >
+                    <div
+                      className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${
+                        msg.role === "user"
+                          ? "bg-white/10"
+                          : "bg-gradient-to-br from-indigo-500 to-purple-600"
+                      }`}
+                    >
+                      {msg.role === "user" ? (
+                        <User size={14} />
+                      ) : (
+                        <Bot size={14} />
+                      )}
+                    </div>
+
+                    <div
+                      className={`max-w-[85%] md:max-w-[70%] p-4 md:p-6 rounded-2xl ${
+                        msg.role === "user"
+                          ? "bg-white/5 text-white rounded-tr-none border border-white/5"
+                          : "bg-black/40 text-gray-300 rounded-tl-none border border-white/5"
+                      }`}
+                    >
                       <div className="whitespace-pre-wrap leading-relaxed">
                         {msg.content}
                       </div>

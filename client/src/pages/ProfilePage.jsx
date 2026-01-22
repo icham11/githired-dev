@@ -14,6 +14,7 @@ import {
   TrendingUp,
   Calendar,
   ArrowRight,
+  Crown,
 } from "lucide-react";
 
 const ProfilePage = () => {
@@ -73,9 +74,17 @@ const ProfilePage = () => {
           animate={{ opacity: 1, y: 0 }}
           className="bg-champion-card border border-white/5 p-8 rounded-2xl relative overflow-hidden mb-8"
         >
-          <div className="absolute top-0 right-0 p-4 bg-champion-gold/10 text-champion-gold font-bold text-xs uppercase rounded-bl-xl tracking-widest flex items-center gap-2">
-            <Trophy size={14} />
-            Level: {gamification.tier}
+          <div className="absolute top-0 right-0 flex gap-2 p-4 z-20">
+            <div className="bg-champion-gold/10 text-champion-gold font-bold text-xs uppercase rounded-bl-xl tracking-widest flex items-center gap-2 px-3 py-2">
+              <Trophy size={14} />
+              Level: {gamification.tier}
+            </div>
+            {user.isPro && (
+              <div className="bg-yellow-500/20 text-yellow-400 font-bold text-xs uppercase rounded-lg tracking-widest flex items-center gap-1 px-3 py-2">
+                <Crown size={16} fill="currentColor" />
+                PRO
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
