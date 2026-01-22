@@ -40,6 +40,7 @@ const InterviewPage = () => {
   const messages = useMemo(() => rawMessages || [], [rawMessages]);
   const [step, setStep] = useState("setup");
   const [role, setRole] = useState("Frontend Developer");
+  const [customRole, setCustomRole] = useState("");
   const [difficulty, setDifficulty] = useState("Normal");
   const [language, setLanguage] = useState("English");
   const [input, setInput] = useState("");
@@ -48,6 +49,17 @@ const InterviewPage = () => {
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+
+  const commonRoles = [
+    "Frontend Developer",
+    "Backend Developer",
+    "Full Stack Developer",
+    "DevOps Engineer",
+    "Data Engineer",
+    "Machine Learning Engineer",
+    "Product Manager",
+    "QA Engineer",
+  ];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -133,8 +145,18 @@ const InterviewPage = () => {
   }, [messages, language]);
 
   const handleStartSession = async () => {
+    // Validate role selection
+    let selectedRole = role;
+    if (role === "Custom") {
+      if (!customRole.trim()) {
+        alert("Please enter a custom role name");
+        return;
+      }
+      selectedRole = customRole.trim();
+    }
+
     const resultAction = await dispatch(
-      startInterview({ role, difficulty, language }),
+      startInterview({ role: selectedRole, difficulty, language }),
     );
 
     if (startInterview.fulfilled.match(resultAction)) {
@@ -215,20 +237,16 @@ const InterviewPage = () => {
             // Let the browser set multipart boundaries automatically
             const res = await api.post("/stt", formData);
 
-            console.log("✅ Transcription:", res.data.text);
-            setInput((prev) =>
-              prev ? prev + " " + res.data.text : res.data.text,
-            );
+            const textResult = res.data?.text || res.data?.transcript || "";
+            console.log("✅ Transcription:", textResult);
+            if (textResult) {
+              setInput((prev) => (prev ? prev + " " + textResult : textResult));
+            } else {
+              alert("No transcription text returned. Please try again.");
+            }
           } catch (err) {
             console.error("❌ STT failed:", err);
             alert("Failed to convert speech to text. Please try again.");
-          }
-          const textResult = res.data?.text || res.data?.transcript || "";
-          console.log("✅ Transcription:", textResult);
-          if (textResult) {
-            setInput((prev) => (prev ? prev + " " + textResult : textResult));
-          } else {
-            alert("No transcription text returned. Please try again.");
           }
           stream.getTracks().forEach((track) => track.stop());
         };
@@ -276,20 +294,41 @@ const InterviewPage = () => {
                   </label>
                   <div className="relative">
                     <select
-                      value={role}
-                      onChange={(e) => setRole(e.target.value)}
+                      value={role === "Custom" ? "Custom" : role}
+                      onChange={(e) => {
+                        const selected = e.target.value;
+                        if (selected === "Custom") {
+                          setRole("Custom");
+                          setCustomRole("");
+                        } else {
+                          setRole(selected);
+                          setCustomRole("");
+                        }
+                      }}
                       className="w-full bg-white/5 border border-white/10 text-white p-4 pr-10 focus:outline-none focus:border-champion-gold/50 transition-colors appearance-none"
                     >
-                      <option>Frontend Developer</option>
-                      <option>Backend Developer</option>
-                      <option>Full Stack Developer</option>
-                      <option>DevOps Engineer</option>
-                      <option>Product Manager</option>
+                      {commonRoles.map((r) => (
+                        <option key={r} value={r}>
+                          {r}
+                        </option>
+                      ))}
+                      <option value="Custom">Custom Role...</option>
                     </select>
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
                       <Settings size={16} />
                     </div>
                   </div>
+
+                  {/* Custom Role Input */}
+                  {role === "Custom" && (
+                    <input
+                      type="text"
+                      placeholder="Enter your custom role (e.g., Solutions Architect)"
+                      value={customRole}
+                      onChange={(e) => setCustomRole(e.target.value)}
+                      className="w-full bg-white/5 border border-champion-gold/30 text-white p-4 placeholder-gray-600 focus:outline-none focus:border-champion-gold transition-colors"
+                    />
+                  )}
                 </div>
 
                 {/* Difficulty Selection */}
