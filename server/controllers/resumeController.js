@@ -19,7 +19,7 @@ const analyze = async (req, res) => {
     const { buffer, originalname } = req.file;
 
     // 1. Upload to ImageKit (async, don't block analysis if not strictly needed, but let's await it for data integrity)
-    // We wrap it in a try-catch so analysis can proceed even if upload fails (optional strategy, but consistent with "Scanner")
+
     let fileUrl = null;
     try {
       const uploadResult = await uploadToImageKit(buffer, originalname);
