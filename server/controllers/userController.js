@@ -21,17 +21,42 @@ const getProfile = async (req, res, next) => {
 
     let tier = "Bronze";
     let nextTier = "Silver";
-    let progress = (totalActivity / 5) * 100;
+    let progress = (totalActivity / 20) * 100; // Bronze: 0-20 activities
 
-    if (totalActivity >= 5) {
+    if (totalActivity >= 20) {
       tier = "Silver";
       nextTier = "Gold";
-      progress = ((totalActivity - 5) / 10) * 100;
+      progress = ((totalActivity - 20) / 40) * 100; // Silver: 20-60 activities
     }
-    if (totalActivity >= 15) {
+    if (totalActivity >= 60) {
       tier = "Gold";
+      nextTier = "Platinum";
+      progress = ((totalActivity - 60) / 80) * 100; // Gold: 60-140 activities
+    }
+    if (totalActivity >= 140) {
+      tier = "Platinum";
+      nextTier = "Diamond";
+      progress = ((totalActivity - 140) / 120) * 100; // Platinum: 140-260 activities
+    }
+    if (totalActivity >= 260) {
+      tier = "Diamond";
+      nextTier = "Champion";
+      progress = ((totalActivity - 260) / 200) * 100; // Diamond: 260-460 activities
+    }
+    if (totalActivity >= 460) {
+      tier = "Champion";
+      nextTier = "Legend";
+      progress = ((totalActivity - 460) / 300) * 100; // Champion: 460-760 activities
+    }
+    if (totalActivity >= 760) {
+      tier = "Legend";
       nextTier = "Max";
-      progress = 100;
+      progress = ((totalActivity - 760) / 500) * 100; // Legend: 760+ activities
+    }
+    if (totalActivity >= 1260) {
+      tier = "Max";
+      nextTier = "Max";
+      progress = 100; // Max: 1260+ activities
     }
 
     // Calculate Average Score

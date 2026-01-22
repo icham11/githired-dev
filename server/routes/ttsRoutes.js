@@ -12,7 +12,7 @@ router.post("/", authenticateToken, async (req, res) => {
     }
 
     const buffer = await synthesizeSpeech(text);
-    res.set("Content-Type", "audio/mpeg"); // Groq returns MP3
+    res.set("Content-Type", "audio/wav"); // Groq Orpheus returns WAV
     res.send(buffer);
   } catch (error) {
     console.error("TTS Error:", error);

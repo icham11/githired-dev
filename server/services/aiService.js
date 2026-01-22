@@ -249,7 +249,7 @@ module.exports = {
 
   /**
    * Text-to-Speech via Groq Orpheus (Natural voice).
-   * Returns audio buffer (MP3 format).
+   * Returns audio buffer (WAV format - only format supported by Orpheus).
    * Fallback: canopylabs/orpheus-arabic-saudi when rate limit/quota is hit.
    */
   synthesizeSpeech: async (text, outputPath = null) => {
@@ -264,7 +264,7 @@ module.exports = {
       return groq.audio.speech.create({
         model,
         voice: "autumn",
-        response_format: "mp3",
+        response_format: "wav",
         input: text,
       });
     };
