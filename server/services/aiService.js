@@ -250,6 +250,7 @@ module.exports = {
   /**
    * Text-to-Speech via Groq Orpheus (Natural voice).
    * Returns audio buffer (MP3 format).
+   * Fallback: canopylabs/orpheus-arabic-saudi when rate limit/quota is hit.
    */
   synthesizeSpeech: async (text, outputPath = null) => {
     if (!groq) {
@@ -259,23 +260,55 @@ module.exports = {
       throw new Error("No text provided for TTS");
     }
 
-    try {
-      const wav = await groq.audio.speech.create({
-        model: "canopylabs/orpheus-v1-english",
+    const createSpeech = async (model) => {
+      return groq.audio.speech.create({
+        model,
         voice: "autumn",
         response_format: "mp3",
         input: text,
       });
+    };
 
-      const buffer = Buffer.from(await wav.arrayBuffer());
+    try {
+      // Primary: English Orpheus
+      const res = await createSpeech("canopylabs/orpheus-v1-english");
+      const buffer = Buffer.from(await res.arrayBuffer());
 
       if (outputPath) {
         const speechFile = path.resolve(outputPath);
         await fs.promises.writeFile(speechFile, buffer);
       }
-
       return buffer;
     } catch (error) {
+      // Detect rate limit/quota errors and fallback
+      const msg = String(error?.message || "").toLowerCase();
+      const isRateOrQuota =
+        error?.status === 429 ||
+        msg.includes("rate") ||
+        msg.includes("limit") ||
+        msg.includes("quota") ||
+        msg.includes("too many requests");
+
+      if (isRateOrQuota) {
+        console.warn(
+          "Groq TTS rate/quota hit. Falling back to canopylabs/orpheus-arabic-saudi.",
+        );
+        try {
+          const resFallback = await createSpeech(
+            "canopylabs/orpheus-arabic-saudi",
+          );
+          const buffer = Buffer.from(await resFallback.arrayBuffer());
+          if (outputPath) {
+            const speechFile = path.resolve(outputPath);
+            await fs.promises.writeFile(speechFile, buffer);
+          }
+          return buffer;
+        } catch (fallbackErr) {
+          console.error("Groq TTS Fallback Error:", fallbackErr);
+          throw new Error("Failed to synthesize speech with Groq fallback");
+        }
+      }
+
       console.error("Groq TTS Error:", error);
       throw new Error("Failed to synthesize speech with Groq");
     }
