@@ -19,6 +19,7 @@ const authRoutes = require("./routes/authRoutes");
 const resumeRoutes = require("./routes/resumeRoutes");
 const interviewRoutes = require("./routes/interviewRoutes");
 const ttsRoutes = require("./routes/ttsRoutes");
+const sttRoutes = require("./routes/sttRoutes");
 const errorHandler = require("./middlewares/errorHandler");
 require("./config/passport");
 
@@ -26,6 +27,7 @@ app.use("/auth", authRoutes);
 app.use("/resume", resumeRoutes);
 app.use("/interview", interviewRoutes);
 app.use("/tts", ttsRoutes);
+app.use("/stt", sttRoutes);
 app.use("/user", require("./routes/userRoutes"));
 app.use("/payment", require("./routes/paymentRoutes"));
 
