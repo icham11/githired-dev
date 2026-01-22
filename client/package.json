@@ -15,6 +15,7 @@
     "autoprefixer": "^10.4.23",
     "axios": "^1.13.2",
     "clsx": "^2.1.1",
+    "firebase": "^12.8.0",
     "framer-motion": "^12.28.1",
     "lucide-react": "^0.562.0",
     "postcss": "^8.5.6",
