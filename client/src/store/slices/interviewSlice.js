@@ -170,6 +170,8 @@ const interviewSlice = createSlice({
         state.result = {
           score: action.payload.score,
           feedback: action.payload.feedback,
+          feedback_en: action.payload.feedback_en,
+          feedback_id: action.payload.feedback_id,
         };
       })
       .addCase(endInterview.rejected, (state, action) => {

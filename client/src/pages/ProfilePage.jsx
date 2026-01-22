@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import api from "../api";
 // eslint-disable-next-line no-unused-vars
@@ -16,6 +17,7 @@ import {
 } from "lucide-react";
 
 const ProfilePage = () => {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [history, setHistory] = useState({ resumes: [], interviews: [] });
   const [activeTab, setActiveTab] = useState("resume");
@@ -38,6 +40,12 @@ const ProfilePage = () => {
     };
     fetchData();
   }, []);
+
+  const handleResumeInterview = (interviewId) => {
+    // Save session ID to localStorage and navigate to interview page
+    localStorage.setItem("currentSessionId", interviewId);
+    navigate("/interview");
+  };
 
   if (loading)
     return (
@@ -246,14 +254,15 @@ const ProfilePage = () => {
                 {history.interviews.map((item) => (
                   <div
                     key={item.id}
-                    className="group flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-champion-gold/30 transition-all"
+                    onClick={() => handleResumeInterview(item.id)}
+                    className="group flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-champion-gold/50 hover:bg-white/10 transition-all cursor-pointer"
                   >
                     <div className="flex items-center gap-4 mb-2 md:mb-0">
-                      <div className="p-2 bg-white/10 rounded-lg text-gray-400 group-hover:text-white transition-colors">
+                      <div className="p-2 bg-white/10 rounded-lg text-gray-400 group-hover:text-champion-gold transition-colors">
                         <MessageSquare size={18} />
                       </div>
                       <div>
-                        <div className="font-bold text-white max-w-[200px] truncate">
+                        <div className="font-bold text-white max-w-[200px] truncate group-hover:text-champion-gold transition-colors">
                           {item.role}
                         </div>
                         <div className="text-xs text-gray-500 flex items-center gap-1">
@@ -273,6 +282,9 @@ const ProfilePage = () => {
                         >
                           {item.score}/100
                         </div>
+                      </div>
+                      <div className="p-2 rounded-full border border-white/10 group-hover:border-champion-gold/50 group-hover:bg-champion-gold/10 text-gray-400 group-hover:text-champion-gold transition-colors">
+                        <ArrowRight size={16} />
                       </div>
                     </div>
                   </div>
