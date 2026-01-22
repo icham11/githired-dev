@@ -1,6 +1,6 @@
 const imagekit = require("../config/imagekit");
 
-const uploadImageKit = async (fileBuffer, fileName) => {
+const uploadToImageKit = async (fileBuffer, fileName) => {
   return new Promise((resolve, reject) => {
     imagekit.upload(
       {
@@ -19,5 +19,5 @@ const uploadImageKit = async (fileBuffer, fileName) => {
 };
 
 module.exports = {
-  uploadImageKit,
+  uploadToImageKit,
 };
