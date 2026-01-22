@@ -1,7 +1,6 @@
 const fs = require("fs");
 const path = require("path");
 const Groq = require("groq-sdk");
-const { textToSpeechStream } = require("elevenlabs-node");
 
 let groq = null;
 
@@ -302,54 +301,10 @@ module.exports = {
   },
 
   /**
-   * Text-to-Speech via ElevenLabs (high quality voice).
-   * Returns audio buffer (MP3 format).
-   */
-  synthesizeSpeechElevenLabs: async (text, outputPath = null) => {
-    if (!process.env.ELEVENLABS_API_KEY) {
-      throw new Error("ELEVENLABS_API_KEY missing");
-    }
-    if (!text || !text.trim()) {
-      throw new Error("No text provided for TTS");
-    }
-
-    try {
-      const audioStream = await textToSpeechStream(
-        process.env.ELEVENLABS_API_KEY,
-        "21m00Tcm4TlvDq8ikWAM", // Rachel voice (English, clear)
-        text,
-      );
-
-      // Collect stream chunks into buffer
-      const chunks = [];
-      for await (const chunk of audioStream) {
-        chunks.push(chunk);
-      }
-      const buffer = Buffer.concat(chunks);
-
-      if (outputPath) {
-        const speechFile = path.resolve(outputPath);
-        await fs.promises.writeFile(speechFile, buffer);
-      }
-
-      return buffer;
-    } catch (error) {
-      console.error("ElevenLabs TTS Error:", error);
-      throw new Error("Failed to synthesize speech with ElevenLabs");
-    }
-  },
-
-  /**
-   * Default TTS - uses ElevenLabs by default, falls back to Groq if needed.
-   * Set TTS_PROVIDER=groq in .env to use Groq by default.
+   * Text-to-Speech using Groq Orpheus.
+   * This is the main TTS function used by the app.
    */
   synthesizeSpeech: async (text, outputPath = null) => {
-    const provider = process.env.TTS_PROVIDER || "elevenlabs";
-
-    if (provider === "groq") {
-      return module.exports.synthesizeSpeechGroq(text, outputPath);
-    } else {
-      return module.exports.synthesizeSpeechElevenLabs(text, outputPath);
-    }
+    return module.exports.synthesizeSpeechGroq(text, outputPath);
   },
 };
