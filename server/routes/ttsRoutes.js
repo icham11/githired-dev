@@ -3,7 +3,7 @@ const router = express.Router();
 const authenticateToken = require("../middlewares/auth");
 const { synthesizeSpeech } = require("../services/aiService");
 
-// Generate TTS audio (WAV) from text
+// Generate TTS audio from text using ElevenLabs
 router.post("/", authenticateToken, async (req, res) => {
   try {
     const { text } = req.body;
@@ -12,7 +12,7 @@ router.post("/", authenticateToken, async (req, res) => {
     }
 
     const buffer = await synthesizeSpeech(text);
-    res.set("Content-Type", "audio/wav");
+    res.set("Content-Type", "audio/mpeg"); // ElevenLabs returns MP3
     res.send(buffer);
   } catch (error) {
     console.error("TTS Error:", error);

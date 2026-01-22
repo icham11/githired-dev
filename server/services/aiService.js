@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const Groq = require("groq-sdk");
+const { textToSpeechStream } = require("elevenlabs-node");
 
 let groq = null;
 
@@ -247,28 +248,40 @@ module.exports = {
   generateInterviewResponse,
   evaluateInterview,
   /**
-   * Text-to-Speech via Groq (returns Buffer of WAV audio).
-   * Optionally write to a file if outputPath is provided.
+   * Text-to-Speech via ElevenLabs (high quality voice).
+   * Returns audio buffer (MP3 format).
    */
   synthesizeSpeech: async (text, outputPath = null) => {
-    if (!groq) throw new Error("GROQ_API_KEY missing");
-    if (!text || !text.trim()) throw new Error("No text provided for TTS");
-
-    const speechFile = outputPath ? path.resolve(outputPath) : null;
-
-    const wav = await groq.audio.speech.create({
-      model: "canopylabs/orpheus-v1-english",
-      voice: "autumn",
-      response_format: "wav",
-      input: text,
-    });
-
-    const buffer = Buffer.from(await wav.arrayBuffer());
-
-    if (speechFile) {
-      await fs.promises.writeFile(speechFile, buffer);
+    if (!process.env.ELEVENLABS_API_KEY) {
+      throw new Error("ELEVENLABS_API_KEY missing");
+    }
+    if (!text || !text.trim()) {
+      throw new Error("No text provided for TTS");
     }
 
-    return buffer; // Return raw audio buffer so caller can stream/base64 if needed
+    try {
+      const audioStream = await textToSpeechStream(
+        process.env.ELEVENLABS_API_KEY,
+        "21m00Tcm4TlvDq8ikWAM", // Rachel voice (English, clear)
+        text,
+      );
+
+      // Collect stream chunks into buffer
+      const chunks = [];
+      for await (const chunk of audioStream) {
+        chunks.push(chunk);
+      }
+      const buffer = Buffer.concat(chunks);
+
+      if (outputPath) {
+        const speechFile = path.resolve(outputPath);
+        await fs.promises.writeFile(speechFile, buffer);
+      }
+
+      return buffer;
+    } catch (error) {
+      console.error("ElevenLabs TTS Error:", error);
+      throw new Error("Failed to synthesize speech");
+    }
   },
 };
