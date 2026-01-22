@@ -46,7 +46,8 @@ const InterviewPage = () => {
   const messagesEndRef = useRef(null);
   const lastSpokenIndex = useRef(-1);
   const [isRecording, setIsRecording] = useState(false);
-  const recognitionRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -70,47 +71,7 @@ const InterviewPage = () => {
   const currentLang = settings?.language || "English";
   const text = uiText[currentLang] || uiText.English;
 
-  // Initialize Speech Recognition
-  useEffect(() => {
-    if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
-      const SpeechRecognition =
-        window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-
-      // Use settings language if available, fallback to state language
-      const currentLanguage = settings?.language || language;
-      recognition.lang = currentLanguage === "Indonesian" ? "id-ID" : "en-US";
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        console.log("🎤 Voice recognized:", transcript);
-        setInput((prev) => (prev ? prev + " " + transcript : transcript));
-        setIsRecording(false);
-      };
-
-      recognition.onerror = (event) => {
-        console.error("❌ Speech recognition error:", event.error);
-        alert(`Voice recognition error: ${event.error}`);
-        setIsRecording(false);
-      };
-
-      recognition.onend = () => {
-        console.log("🛑 Recognition ended");
-        setIsRecording(false);
-      };
-
-      recognition.onstart = () => {
-        console.log("🎙️ Recognition started");
-      };
-
-      recognitionRef.current = recognition;
-    } else {
-      console.warn("⚠️ Speech Recognition not supported");
-    }
-  }, [language, settings?.language]);
-
+  // Restore existing session on mount
   useEffect(() => {
     const savedSessionId = localStorage.getItem("currentSessionId");
     if (savedSessionId && !sessionId) {
@@ -203,26 +164,82 @@ const InterviewPage = () => {
     await dispatch(sendMessage({ sessionId, message: userMessage }));
   };
 
-  const toggleRecording = () => {
-    if (!recognitionRef.current) {
-      alert(
-        "Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.",
-      );
+  const toggleRecording = async () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert("Voice recording is not supported in your browser");
       return;
     }
 
     if (isRecording) {
+      // Stop recording
       console.log("⏹️ Stopping recording...");
-      recognitionRef.current.stop();
+      if (
+        mediaRecorderRef.current &&
+        mediaRecorderRef.current.state !== "inactive"
+      ) {
+        mediaRecorderRef.current.stop();
+      }
       setIsRecording(false);
     } else {
+      // Start recording
       try {
         console.log("▶️ Starting recording...");
-        recognitionRef.current.start();
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+
+        const mediaRecorder = new MediaRecorder(stream, {
+          mimeType: "audio/webm",
+        });
+
+        audioChunksRef.current = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = async () => {
+          console.log("🎤 Processing audio...");
+          const audioBlob = new Blob(audioChunksRef.current, {
+            type: "audio/webm",
+          });
+
+          // Send to Groq Whisper API
+          try {
+            const formData = new FormData();
+            formData.append("audio", audioBlob, "recording.webm");
+            formData.append("language", settings?.language || language);
+
+            // Let the browser set multipart boundaries automatically
+            const res = await api.post("/stt", formData);
+
+            console.log("✅ Transcription:", res.data.text);
+            setInput((prev) =>
+              prev ? prev + " " + res.data.text : res.data.text,
+            );
+          } catch (err) {
+            console.error("❌ STT failed:", err);
+            alert("Failed to convert speech to text. Please try again.");
+          }
+          const textResult = res.data?.text || res.data?.transcript || "";
+          console.log("✅ Transcription:", textResult);
+          if (textResult) {
+            setInput((prev) => (prev ? prev + " " + textResult : textResult));
+          } else {
+            alert("No transcription text returned. Please try again.");
+          }
+          stream.getTracks().forEach((track) => track.stop());
+        };
+
+        mediaRecorderRef.current = mediaRecorder;
+        mediaRecorder.start();
         setIsRecording(true);
+        console.log("🎙️ Recording started");
       } catch (error) {
-        console.error("Failed to start recognition:", error);
-        alert("Failed to start voice input. Please try again.");
+        console.error("Failed to start recording:", error);
+        alert("Failed to access microphone. Please grant permission.");
         setIsRecording(false);
       }
     }

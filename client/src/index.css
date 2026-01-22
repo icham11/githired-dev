@@ -1,9 +1,48 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Oswald:wght@300;400;500;600;700&display=swap");
+@import "tailwindcss";
+@config "../tailwind.config.js";
 
-body {
-  background-color: #1a1a1a;
-  color: #ffffff;
-  font-family: "Inter", sans-serif;
+@layer base {
+  body {
+    @apply bg-champion-dark text-champion-text font-sans overflow-x-hidden antialiased;
+  }
+}
+
+@layer utilities {
+  .font-heading {
+    font-family: "Oswald", sans-serif;
+  }
+
+  .font-sans {
+    font-family: "Manrope", sans-serif;
+  }
+
+  .bg-gradient-gold {
+    background: linear-gradient(135deg, #ffd700 0%, #d4af37 50%, #b8860b 100%);
+  }
+
+  .text-gradient-gold {
+    background: linear-gradient(135deg, #ffd700 0%, #d4af37 50%, #b8860b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-track-transparent::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thumb-white\/10::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 9999px;
+  }
+
+  .scrollbar-thumb-white\/20::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 9999px;
+  }
 }
