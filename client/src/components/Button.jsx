@@ -1,12 +1,13 @@
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 
 const Button = ({
-  onClick,
   children,
-  className = "",
+  onClick,
   variant = "primary",
-  disabled = false,
   type = "button",
+  disabled = false,
+  className = "",
   size = "md",
 }) => {
   const baseStyles =
@@ -26,7 +27,7 @@ const Button = ({
     outline:
       "text-champion-silver border border-champion-silver/20 hover:border-white hover:text-white",
     danger:
-      "bg-red-900/20 text-red-500 border border-red--900/50 hover:bg-red-600 hover:text-white hover:border-red-600",
+      "bg-red-900/20 text-red-500 border border-remod-900/50 hover:bg-red-600 hover:text-white hover:border-red-600",
   };
 
   return (
@@ -34,7 +35,9 @@ const Button = ({
       type={type}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
-      className={`${baseStyles} ${sizes[size]} ${variants[variant]} ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
+      className={`${baseStyles} ${sizes[size]} ${variants[variant]} ${
+        disabled ? "opacity-50 cursor-not-allowed" : ""
+      } ${className}`}
       onClick={onClick}
       disabled={disabled}
     >
@@ -42,7 +45,7 @@ const Button = ({
         {children}
       </span>
       {variant === "primary" && (
-        <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+        <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
       )}
     </motion.button>
   );
