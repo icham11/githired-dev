@@ -78,26 +78,38 @@ const InterviewPage = () => {
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
       recognition.interimResults = false;
-      recognition.lang = language === "Indonesian" ? "id-ID" : "en-US";
+
+      // Use settings language if available, fallback to state language
+      const currentLanguage = settings?.language || language;
+      recognition.lang = currentLanguage === "Indonesian" ? "id-ID" : "en-US";
 
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
-        setInput((prev) => prev + " " + transcript);
+        console.log("🎤 Voice recognized:", transcript);
+        setInput((prev) => (prev ? prev + " " + transcript : transcript));
         setIsRecording(false);
       };
 
       recognition.onerror = (event) => {
-        console.error("Speech recognition error:", event.error);
+        console.error("❌ Speech recognition error:", event.error);
+        alert(`Voice recognition error: ${event.error}`);
         setIsRecording(false);
       };
 
       recognition.onend = () => {
+        console.log("🛑 Recognition ended");
         setIsRecording(false);
       };
 
+      recognition.onstart = () => {
+        console.log("🎙️ Recognition started");
+      };
+
       recognitionRef.current = recognition;
+    } else {
+      console.warn("⚠️ Speech Recognition not supported");
     }
-  }, [language]);
+  }, [language, settings?.language]);
 
   useEffect(() => {
     const savedSessionId = localStorage.getItem("currentSessionId");
@@ -193,16 +205,26 @@ const InterviewPage = () => {
 
   const toggleRecording = () => {
     if (!recognitionRef.current) {
-      alert("Speech recognition is not supported in your browser");
+      alert(
+        "Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.",
+      );
       return;
     }
 
     if (isRecording) {
+      console.log("⏹️ Stopping recording...");
       recognitionRef.current.stop();
       setIsRecording(false);
     } else {
-      recognitionRef.current.start();
-      setIsRecording(true);
+      try {
+        console.log("▶️ Starting recording...");
+        recognitionRef.current.start();
+        setIsRecording(true);
+      } catch (error) {
+        console.error("Failed to start recognition:", error);
+        alert("Failed to start voice input. Please try again.");
+        setIsRecording(false);
+      }
     }
   };
 
