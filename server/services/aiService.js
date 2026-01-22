@@ -249,7 +249,7 @@ module.exports = {
 
   /**
    * Text-to-Speech via Groq Orpheus (Natural voice).
-   * Returns audio buffer (WAV format).
+   * Returns audio buffer (MP3 format).
    */
   synthesizeSpeech: async (text, outputPath = null) => {
     if (!groq) {
@@ -263,7 +263,7 @@ module.exports = {
       const wav = await groq.audio.speech.create({
         model: "canopylabs/orpheus-v1-english",
         voice: "autumn",
-        response_format: "wav",
+        response_format: "mp3",
         input: text,
       });
 
