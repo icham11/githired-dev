@@ -32,7 +32,7 @@ router.get(
       { expiresIn: "24h" },
     );
 
-    res.redirect(`http://localhost:5173/oauth-success?token=${token}`);
+    res.redirect(`https://githired.web.app//oauth-success?token=${token}`);
   },
 );
 
