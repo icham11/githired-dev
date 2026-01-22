@@ -260,18 +260,18 @@ module.exports = {
       throw new Error("No text provided for TTS");
     }
 
-    const createSpeech = async (model) => {
+    const createSpeech = async (model, voice) => {
       return groq.audio.speech.create({
         model,
-        voice: "autumn",
+        voice,
         response_format: "wav",
         input: text,
       });
     };
 
     try {
-      // Primary: English Orpheus
-      const res = await createSpeech("canopylabs/orpheus-v1-english");
+      // Primary: English Orpheus with "autumn" voice
+      const res = await createSpeech("canopylabs/orpheus-v1-english", "autumn");
       const buffer = Buffer.from(await res.arrayBuffer());
 
       if (outputPath) {
@@ -291,11 +291,13 @@ module.exports = {
 
       if (isRateOrQuota) {
         console.warn(
-          "Groq TTS rate/quota hit. Falling back to canopylabs/orpheus-arabic-saudi.",
+          "Groq TTS rate/quota hit. Falling back to canopylabs/orpheus-arabic-saudi with voice 'aisha'.",
         );
         try {
+          // Arabic model uses different voices: fahad, sultan, noura, lulwa, aisha
           const resFallback = await createSpeech(
             "canopylabs/orpheus-arabic-saudi",
+            "aisha",
           );
           const buffer = Buffer.from(await resFallback.arrayBuffer());
           if (outputPath) {
