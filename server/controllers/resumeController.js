@@ -1,7 +1,7 @@
-const pdf = require("pdf-parse");
 const { ResumeAnalysis, User } = require("../models");
 const { analyzeResume } = require("../services/aiService");
 const { uploadImageKit } = require("../utils/uploadUtils");
+const pdf = require("pdf-parse");
 
 const analyze = async (req, res) => {
   try {
