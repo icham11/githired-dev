@@ -9,6 +9,7 @@ import {
 } from "../store/slices/interviewSlice";
 import Navbar from "../components/Navbar";
 import Button from "../components/Button";
+import api from "../api";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -43,6 +44,7 @@ const InterviewPage = () => {
   const [language, setLanguage] = useState("English");
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
+  const lastSpokenIndex = useRef(-1);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -82,6 +84,41 @@ const InterviewPage = () => {
   useEffect(() => {
     if (messages.length > 0) {
       scrollToBottom();
+    }
+  }, [messages]);
+
+  // Auto play TTS for latest assistant message
+  useEffect(() => {
+    if (!messages.length) return;
+    const lastAssistantIndex = [...messages]
+      .map((m, idx) => ({ ...m, idx }))
+      .filter((m) => m.role === "assistant")
+      .map((m) => m.idx)
+      .pop();
+
+    if (
+      lastAssistantIndex !== undefined &&
+      lastAssistantIndex > lastSpokenIndex.current
+    ) {
+      const text = messages[lastAssistantIndex].content;
+      lastSpokenIndex.current = lastAssistantIndex;
+
+      // Fire and forget TTS fetch
+      (async () => {
+        try {
+          const res = await api.post(
+            "/tts",
+            { text },
+            { responseType: "blob" },
+          );
+          const blob = res.data;
+          const url = URL.createObjectURL(blob);
+          const audio = new Audio(url);
+          audio.play();
+        } catch (err) {
+          console.error("TTS playback failed", err);
+        }
+      })();
     }
   }, [messages]);
 
