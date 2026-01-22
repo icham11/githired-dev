@@ -6,6 +6,7 @@ import {
   sendMessage,
   fetchSession,
   endInterview,
+  seedGreeting,
 } from "../store/slices/interviewSlice";
 import Navbar from "../components/Navbar";
 import Button from "../components/Button";
@@ -23,6 +24,8 @@ import {
   Mic,
   StopCircle,
   Trophy,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 
 const InterviewPage = () => {
@@ -44,6 +47,7 @@ const InterviewPage = () => {
   const [difficulty, setDifficulty] = useState("Normal");
   const [language, setLanguage] = useState("English");
   const [input, setInput] = useState("");
+  const [isMuted, setIsMuted] = useState(false);
   const messagesEndRef = useRef(null);
   const lastSpokenIndex = useRef(-1);
   const [isRecording, setIsRecording] = useState(false);
@@ -105,7 +109,7 @@ const InterviewPage = () => {
 
   // Auto play TTS for latest assistant message using Groq Orpheus
   useEffect(() => {
-    if (!messages.length) return;
+    if (!messages.length || isMuted) return;
     const lastAssistantIndex = [...messages]
       .map((m, idx) => ({ ...m, idx }))
       .filter((m) => m.role === "assistant")
@@ -155,6 +159,9 @@ const InterviewPage = () => {
       selectedRole = customRole.trim();
     }
 
+    // Ensure displayed role matches selected/custom value
+    setRole(selectedRole);
+
     const resultAction = await dispatch(
       startInterview({ role: selectedRole, difficulty, language }),
     );
@@ -163,6 +170,12 @@ const InterviewPage = () => {
       setStep("chat");
       if (resultAction.payload?.id) {
         localStorage.setItem("currentSessionId", resultAction.payload.id);
+      }
+      // Seed initial greeting if chat history empty
+      if (!messages.length) {
+        const greetEn = "Hi! I'm your interviewer. What should I call you before we begin?";
+        const greetId = "Halo! Saya pewawancara Anda. Boleh tahu nama Anda sebelum kita mulai?";
+        dispatch(seedGreeting(language === "Indonesian" ? greetId : greetEn));
       }
     } else {
       const errorMessage = resultAction.payload || "";
@@ -449,25 +462,38 @@ const InterviewPage = () => {
                   >
                     <div
                       className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${
-                        msg.role === "user"
-                          ? "bg-white/10"
-                          : "bg-gradient-to-br from-indigo-500 to-purple-600"
-                      }`}
-                    >
-                      {msg.role === "user" ? (
-                        <User size={14} />
-                      ) : (
-                        <Bot size={14} />
-                      )}
-                    </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setIsMuted((v) => !v)}
+                    className={`p-2 rounded-full transition-colors ${
+                      isMuted
+                        ? "bg-red-900/30 text-red-300 hover:bg-red-900/50"
+                        : "hover:bg-white/10 text-gray-300 hover:text-white"
+                    }`}
+                    title={isMuted ? "Unmute voice" : "Mute voice"}
+                  >
+                    {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                  </button>
 
-                    <div
-                      className={`max-w-[85%] md:max-w-[70%] p-4 md:p-6 rounded-2xl ${
-                        msg.role === "user"
-                          ? "bg-white/5 text-white rounded-tr-none border border-white/5"
-                          : "bg-black/40 text-gray-300 rounded-tl-none border border-white/5"
-                      }`}
-                    >
+                  <button
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "Abort current simulation? Progress will be lost.",
+                        )
+                      ) {
+                        localStorage.removeItem("currentSessionId");
+                        dispatch(clearInterview());
+                        setStep("setup");
+                        setInput("");
+                      }
+                    }}
+                    className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400 hover:text-red-400"
+                    title="End Session"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
                       <div className="whitespace-pre-wrap leading-relaxed">
                         {msg.content}
                       </div>

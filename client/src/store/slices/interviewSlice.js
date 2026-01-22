@@ -84,6 +84,11 @@ const interviewSlice = createSlice({
       state.messages = [];
       state.error = null;
     },
+    seedGreeting: (state, action) => {
+      const content =
+        action.payload || "Hello! Before we start, what should I call you?";
+      state.messages.push({ role: "assistant", content });
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -181,5 +186,5 @@ const interviewSlice = createSlice({
   },
 });
 
-export const { clearInterview } = interviewSlice.actions;
+export const { clearInterview, seedGreeting } = interviewSlice.actions;
 export default interviewSlice.reducer;

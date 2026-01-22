@@ -6,7 +6,7 @@ import { clearInterview } from "../store/slices/interviewSlice";
 import Button from "./Button";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Trophy, User, LogOut } from "lucide-react";
+import { Menu, X, Crown, User, LogOut } from "lucide-react";
 
 const NavLink = ({ to, children }) => {
   const location = useLocation();
@@ -90,8 +90,8 @@ const Navbar = () => {
                       {user?.username || "Guest"}
                     </span>
                     {user?.isPro && (
-                      <span className="bg-champion-gold text-black text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
-                        PRO <Trophy size={8} />
+                      <span className="bg-champion-gold text-black text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1 shadow-[0_0_12px_rgba(255,215,0,0.35)]">
+                        PRO <Crown size={10} />
                       </span>
                     )}
                   </Link>
@@ -148,9 +148,14 @@ const Navbar = () => {
                 <Link
                   to="/profile"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-2xl font-heading text-white hover:text-champion-gold"
+                  className="text-2xl font-heading text-white hover:text-champion-gold flex items-center gap-2"
                 >
                   PROFILE
+                  {user?.isPro && (
+                    <span className="bg-champion-gold text-black text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1 shadow-[0_0_12px_rgba(255,215,0,0.35)]">
+                      PRO <Crown size={10} />
+                    </span>
+                  )}
                 </Link>
                 <Button
                   variant="danger"
