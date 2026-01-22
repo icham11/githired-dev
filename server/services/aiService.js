@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const Groq = require("groq-sdk");
 
 let groq = null;
@@ -28,7 +30,7 @@ const analyzeResume = async (resumeText) => {
   if (!groq) return { score: 0, feedback: "API Key missing." };
 
   try {
-    const prompt = `You are an expert HR. Analyze this resume and provide detailed feedback. Return your response in valid JSON format with this exact structure:
+    const prompt = `You are an expert HR . Analyze this resume and provide detailed feedback. Return your response in valid JSON format with this exact structure:
     {
       "score": <number between 0-100>,
       "feedback_en": "<detailed English feedback>",
@@ -244,4 +246,29 @@ module.exports = {
   analyzeResume,
   generateInterviewResponse,
   evaluateInterview,
+  /**
+   * Text-to-Speech via Groq (returns Buffer of WAV audio).
+   * Optionally write to a file if outputPath is provided.
+   */
+  synthesizeSpeech: async (text, outputPath = null) => {
+    if (!groq) throw new Error("GROQ_API_KEY missing");
+    if (!text || !text.trim()) throw new Error("No text provided for TTS");
+
+    const speechFile = outputPath ? path.resolve(outputPath) : null;
+
+    const wav = await groq.audio.speech.create({
+      model: "canopylabs/orpheus-v1-english",
+      voice: "autumn",
+      response_format: "wav",
+      input: text,
+    });
+
+    const buffer = Buffer.from(await wav.arrayBuffer());
+
+    if (speechFile) {
+      await fs.promises.writeFile(speechFile, buffer);
+    }
+
+    return buffer; // Return raw audio buffer so caller can stream/base64 if needed
+  },
 };
