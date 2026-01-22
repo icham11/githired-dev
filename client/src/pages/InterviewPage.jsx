@@ -607,7 +607,9 @@ const InterviewPage = () => {
                     {text.debrief}
                   </h4>
                   <div className="text-gray-300 space-y-2 leading-relaxed whitespace-pre-wrap">
-                    {result.feedback}
+                    {currentLang === "Indonesian"
+                      ? result.feedback_id || result.feedback
+                      : result.feedback_en || result.feedback}
                   </div>
                 </div>
 
