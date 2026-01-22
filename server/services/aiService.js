@@ -343,7 +343,7 @@ const evaluateInterview = async (chatHistory, role, language = "English") => {
     "score": <number 0-100>,
     "feedback": "<concise feedback in ${language} on where they failed and where they succeeded>"
   }
-  Do not include markdown formatting or extra text.`;
+   *** REMEMBER: THE FEEDBACK MUST BE IN ${language} ***`;
 
   try {
     const result = await ai.models.generateContent({
