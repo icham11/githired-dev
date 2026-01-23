@@ -78,104 +78,97 @@ ${resumeText}
 
 **OUTPUT FORMAT (STRICT JSON)**:
 {
-  "score": <exact number 0-100 based on framework>,
-  "feedback_en": "<Well-formatted English analysis>",
-  "feedback_id": "<Well-formatted Indonesian analysis>"
+  "score": <exact number 0-100>,
+  "feedback_en": "<IMPORTANT: Format with emoji sections, clear headers, and actual analysis data. Replace all [PLACEHOLDER] with real analysis.>",
+  "feedback_id": "<IMPORTANT: Same as above in Indonesian language.>"
 }
 
-**FEEDBACK FORMAT** (Use this exact structure with proper spacing and formatting):
+**FEEDBACK TEMPLATE** (Fill in the ACTUAL analysis, don't use placeholders):
 
 ═══════════════════════════════════════════════════════
 📊 RESUME SCORE ANALYSIS
 ═══════════════════════════════════════════════════════
 
-Overall Score: [XX]/100
-Grade: [Letter Grade - S/A/B/C/D]
-Level: [Elite/Strong/Good/Fair/Weak/Critical]
+Overall Score: [REPLACE WITH ACTUAL SCORE]/100
+Grade: [REPLACE WITH S/A/B/C/D]
+Level: [REPLACE WITH Elite/Strong/Good/Fair/Weak]
 
-SCORE BREAKDOWN:
-✓ ATS Compatibility: [XX]/25
-✓ Content Quality: [XX]/35
-✓ Professional Impact: [XX]/25
-✓ Presentation & Polish: [XX]/15
+SCORE BREAKDOWN (must total 100):
+✓ ATS Compatibility: [ACTUAL POINTS]/25
+✓ Content Quality: [ACTUAL POINTS]/35
+✓ Professional Impact: [ACTUAL POINTS]/25
+✓ Presentation & Polish: [ACTUAL POINTS]/15
 
 ═══════════════════════════════════════════════════════
 ✅ KEY STRENGTHS
 ═══════════════════════════════════════════════════════
 
-• [Strength 1 with specific example from resume]
-• [Strength 2 with specific example from resume]
-• [Strength 3 with specific example from resume]
-• [Additional strengths if applicable]
+[PROVIDE 3-5 ACTUAL STRENGTHS with specific quotes or examples from the resume. NOT PLACEHOLDERS]
+
+Example format:
+• Strong technical background: Resume mentions "Python, JavaScript, React" with 5+ years of experience
+• Quantifiable achievements: Shows "increased sales by 45% within 6 months" 
+• Clear progression: Demonstrates career growth from Junior to Senior roles
 
 ═══════════════════════════════════════════════════════
 ⚠️ CRITICAL IMPROVEMENTS NEEDED
 ═══════════════════════════════════════════════════════
 
-🔴 PRIORITY 1: [Issue]
-   → Impact: [Why this hurts your chances]
-   → Fix: [Specific actionable solution]
+[PROVIDE 3-5 REAL ISSUES with specific fixes]
 
-🔴 PRIORITY 2: [Issue]
-   → Impact: [Why this hurts your chances]
-   → Fix: [Specific actionable solution]
+Example format:
+🔴 PRIORITY 1: Resume uses inconsistent date formats
+   → Impact: ATS parsers struggle with dates, may filter you out
+   → Fix: Use MM/YYYY consistently throughout (e.g., "01/2020 - 03/2022")
 
-🔴 PRIORITY 3: [Issue]
-   → Impact: [Why this hurts your chances]
-   → Fix: [Specific actionable solution]
+🔴 PRIORITY 2: Missing metrics on achievements
+   → Impact: Hiring managers can't assess real impact
+   → Fix: Change "Managed database" to "Optimized database queries, reducing load time by 60%"
 
 ═══════════════════════════════════════════════════════
 🎯 ATS OPTIMIZATION CHECKLIST
 ═══════════════════════════════════════════════════════
 
-FORMAT:
-☐ Use standard fonts (Arial, Calibri, Helvetica)
-☐ Remove tables, columns, text boxes, headers/footers
-☐ Use standard section headers (Experience, Education, Skills)
-☐ Keep file as .docx or .pdf (not scanned images)
+FORMAT ISSUES TO FIX:
+☐ Font consistency (recommend Arial 10-11pt)
+☐ Remove tables/columns if present
+☐ Standard headers: Experience, Education, Skills, etc.
+☐ File format must be .docx or .pdf
 
-CONTENT:
-☐ Include 8-12 relevant keywords from target job descriptions
-☐ Use action verbs (Led, Developed, Increased, Achieved)
-☐ Quantify achievements with numbers/percentages
-☐ Keep length to 1-2 pages maximum
+CONTENT OPTIMIZATION:
+☐ Add 8-12 keywords from target job descriptions
+☐ Replace weak verbs with action verbs (Created → Developed, Managed → Led)
+☐ Add numbers to all achievements (% increase, $ savings, users served)
+☐ Shorten to 1 page if possible
 
-IMPACT:
-☐ Show career progression and growth
-☐ Highlight specific technical skills and tools
-☐ Demonstrate problem-solving with examples
-☐ Include measurable results and outcomes
+IMPACT STATEMENTS:
+☐ Every role shows clear problem-solution-result
+☐ Technical skills are specific (not "strong in tech", but "Python, JavaScript, React")
+☐ Career progression is visible
 
 ═══════════════════════════════════════════════════════
-📚 ACTION PLAN (Next 48 Hours)
+📚 ACTION PLAN (48 Hours)
 ═══════════════════════════════════════════════════════
 
-IMMEDIATE (Do Today):
-1. [Most urgent fix with specific steps]
-2. [Second most urgent fix]
-3. [Third priority fix]
+IMMEDIATE (Today):
+1. [REAL PRIORITY 1 with steps]
+2. [REAL PRIORITY 2 with steps]
 
 THIS WEEK:
-• [Medium-term improvement 1]
-• [Medium-term improvement 2]
-• [Additional recommendations]
-
-BEFORE APPLYING:
-✓ [Final check 1]
-✓ [Final check 2]
-✓ [Final validation step]
+• [REAL MEDIUM-TERM improvement 1]
+• [REAL MEDIUM-TERM improvement 2]
 
 ═══════════════════════════════════════════════════════
 💡 FINAL VERDICT
 ═══════════════════════════════════════════════════════
 
-[Honest 2-3 sentence summary of current state and readiness]
+[WRITE 2-3 sentences: Honest assessment of current state, whether they're ready to apply, and what to focus on first]
 
-[Personalized encouragement and next step recommendation]
+Example: "Your resume shows strong technical skills but lacks quantifiable impact metrics. With the improvements above, you'll have a competitive ATS score. Start with Priority 1 immediately - date format consistency is quick and improves parsing by 30%."
 
 Good luck! 🚀
 
-BE BRUTALLY HONEST. Reject generic resumes. Reward quantifiable impact. Reference real ATS filtering criteria.`;
+DO NOT USE PLACEHOLDERS. Replace every [BRACKET] with ACTUAL ANALYSIS DATA.`;
 
     const completion = await groq.chat.completions.create({
       messages: [
