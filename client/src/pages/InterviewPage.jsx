@@ -555,97 +555,87 @@ const InterviewPage = () => {
               <div className="p-4 md:p-6 bg-black/40 border-t border-white/5 backdrop-blur-md">
                 <form
                   onSubmit={handleSendMessage}
-                  className="relative flex items-end gap-4 max-w-4xl mx-auto"
+                  className="relative flex items-end gap-4 max-w-4xl mx-auto flex-col"
                 >
-                  {messages.filter((m) => m.role === "assistant").length >=
-                  4 ? (
-                    <div className="w-full flex gap-4">
-                      <Button
-                        type="button"
-                        onClick={() => setInput("")}
-                        variant="secondary"
-                        className="py-4 px-6 h-[60px] rounded-xl flex items-center justify-center flex-1"
-                      >
-                        <span className="font-bold">CONTINUE</span>
-                      </Button>
-                      <Button
-                        type="button"
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              "End session and generate report? This cannot be undone.",
-                            )
-                          ) {
-                            dispatch(endInterview(sessionId));
+                  {/* Input Area - Always Visible */}
+                  <div className="w-full flex items-end gap-4">
+                    <div className="flex-1 relative">
+                      <textarea
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendMessage(e);
                           }
                         }}
-                        variant="danger"
-                        className="py-4 px-6 h-[60px] rounded-xl flex items-center justify-center bg-red-500 hover:bg-red-600 text-white flex-1"
-                      >
-                        <span className="mr-2 font-bold">
-                          END SESSION & GET SCORE
-                        </span>
-                        <StopCircle size={20} />
-                      </Button>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex-1 relative">
-                        <textarea
-                          value={input}
-                          onChange={(e) => setInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                              e.preventDefault();
-                              handleSendMessage(e);
-                            }
-                          }}
-                          className="w-full bg-white/5 border border-white/10 text-white pl-4 pr-4 py-4 rounded-xl focus:outline-none focus:border-champion-gold/50 focus:bg-white/10 transition-all resize-none min-h-[60px] max-h-[120px]"
-                          placeholder={
-                            isRecording
-                              ? "Listening..."
-                              : "Type or speak your answer..."
-                          }
-                          disabled={loading}
-                        />
-                      </div>
-                      <Button
-                        type="button"
-                        onClick={toggleRecording}
-                        disabled={loading}
-                        variant={isRecording ? "danger" : "secondary"}
-                        className={`py-4 px-6 h-[60px] rounded-xl flex items-center justify-center ${
+                        className="w-full bg-white/5 border border-white/10 text-white pl-4 pr-4 py-4 rounded-xl focus:outline-none focus:border-champion-gold/50 focus:bg-white/10 transition-all resize-none min-h-[60px] max-h-[120px]"
+                        placeholder={
                           isRecording
-                            ? "animate-pulse bg-red-500 hover:bg-red-600"
-                            : ""
-                        }`}
-                        title={
-                          isRecording ? "Stop recording" : "Start voice input"
+                            ? "Listening..."
+                            : "Type or speak your answer..."
                         }
-                      >
-                        <Mic size={20} />
-                      </Button>
-                      <Button
-                        type="button"
-                        onClick={handleSendMessage}
-                        disabled={loading || !input.trim()}
-                        variant="primary"
-                        className="py-4 px-6 h-[60px] rounded-xl flex items-center justify-center"
-                      >
-                        <Send size={20} />
-                      </Button>
-                    </>
+                        disabled={loading}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={toggleRecording}
+                      disabled={loading}
+                      variant={isRecording ? "danger" : "secondary"}
+                      className={`py-4 px-6 h-[60px] rounded-xl flex items-center justify-center ${
+                        isRecording
+                          ? "animate-pulse bg-red-500 hover:bg-red-600"
+                          : ""
+                      }`}
+                      title={
+                        isRecording ? "Stop recording" : "Start voice input"
+                      }
+                    >
+                      <Mic size={20} />
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleSendMessage}
+                      disabled={loading || !input.trim()}
+                      variant="primary"
+                      className="py-4 px-6 h-[60px] rounded-xl flex items-center justify-center"
+                    >
+                      <Send size={20} />
+                    </Button>
+                  </div>
+
+                  {/* End Session Button - Only shows after 4 messages */}
+                  {messages.filter((m) => m.role === "assistant").length >=
+                    4 && (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            "End session and generate report? This cannot be undone.",
+                          )
+                        ) {
+                          dispatch(endInterview(sessionId));
+                        }
+                      }}
+                      variant="danger"
+                      className="py-4 px-6 h-[60px] rounded-xl flex items-center justify-center bg-red-500 hover:bg-red-600 text-white w-full"
+                    >
+                      <span className="mr-2 font-bold">
+                        END SESSION & GET SCORE
+                      </span>
+                      <StopCircle size={20} />
+                    </Button>
                   )}
                 </form>
-                {/* Helper text only when input is visible */}
-                {messages.filter((m) => m.role === "assistant").length < 4 && (
-                  <div className="text-center mt-3">
-                    <p className="text-[10px] text-gray-500 uppercase tracking-widest">
-                      Press Enter to Send • Shift + Enter for new line • 🎤
-                      Voice Input Available
-                    </p>
-                  </div>
-                )}
+                {/* Helper text */}
+                <div className="text-center mt-3">
+                  <p className="text-[10px] text-gray-500 uppercase tracking-widest">
+                    Press Enter to Send • Shift + Enter for new line • 🎤 Voice
+                    Input Available
+                  </p>
+                </div>
               </div>
             </motion.div>
           )}
