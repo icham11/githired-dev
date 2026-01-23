@@ -549,7 +549,7 @@ const ProfilePage = () => {
                     <h3 className="text-champion-gold font-bold uppercase tracking-widest text-sm mb-4">
                       Analysis Feedback
                     </h3>
-                    <div className="text-gray-300 space-y-3 leading-relaxed whitespace-pre-wrap text-sm">
+                    <div className="text-gray-300 space-y-2 leading-relaxed whitespace-pre-wrap text-sm font-mono overflow-x-auto">
                       {selectedResume.feedback_en ||
                         selectedResume.feedback_id ||
                         selectedResume.feedback ||
