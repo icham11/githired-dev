@@ -158,6 +158,7 @@ THIS WEEK:
 • [REAL MEDIUM-TERM improvement 1]
 • [REAL MEDIUM-TERM improvement 2]
 
+
 ═══════════════════════════════════════════════════════
 💡 FINAL VERDICT
 ═══════════════════════════════════════════════════════
@@ -168,7 +169,15 @@ Example: "Your resume shows strong technical skills but lacks quantifiable impac
 
 Good luck! 🚀
 
-DO NOT USE PLACEHOLDERS. Replace every [BRACKET] with ACTUAL ANALYSIS DATA.`;
+IMPORTANT INSTRUCTIONS FOR OUTPUT:
+- Format the feedback_en and feedback_id with clear sections
+- Use line breaks to separate sections clearly
+- Use simple dividers like "---" or "━━━━" instead of long unicode lines
+- Make sure each section is distinct and readable
+- Do NOT include placeholder text - replace [BRACKETS] with actual analysis
+- Keep sections concise but informative
+- Use bullet points for lists
+- Include actual data and examples from the resume`;
 
     const completion = await groq.chat.completions.create({
       messages: [
