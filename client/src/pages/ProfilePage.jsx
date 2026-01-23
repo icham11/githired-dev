@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import api from "../api";
 // eslint-disable-next-line no-unused-vars
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   User,
   Mail,
@@ -15,6 +15,7 @@ import {
   Calendar,
   ArrowRight,
   Crown,
+  X,
 } from "lucide-react";
 
 const ProfilePage = () => {
@@ -23,6 +24,7 @@ const ProfilePage = () => {
   const [history, setHistory] = useState({ resumes: [], interviews: [] });
   const [activeTab, setActiveTab] = useState("resume");
   const [loading, setLoading] = useState(true);
+  const [selectedInterview, setSelectedInterview] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,10 +44,8 @@ const ProfilePage = () => {
     fetchData();
   }, []);
 
-  const handleResumeInterview = (interviewId) => {
-    // Save session ID to localStorage and navigate to interview page
-    localStorage.setItem("currentSessionId", interviewId);
-    navigate("/interview");
+  const handleResumeInterview = (interview) => {
+    setSelectedInterview(interview);
   };
 
   if (loading)
@@ -263,7 +263,7 @@ const ProfilePage = () => {
                 {history.interviews.map((item) => (
                   <div
                     key={item.id}
-                    onClick={() => handleResumeInterview(item.id)}
+                    onClick={() => handleResumeInterview(item)}
                     className="group flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-champion-gold/50 hover:bg-white/10 transition-all cursor-pointer"
                   >
                     <div className="flex items-center gap-4 mb-2 md:mb-0">
@@ -313,6 +313,140 @@ const ProfilePage = () => {
             )}
           </div>
         </motion.div>
+
+        {/* Interview Detail Modal */}
+        <AnimatePresence>
+          {selectedInterview && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex items-center justify-center p-4"
+              onClick={() => setSelectedInterview(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-champion-card border border-white/10 rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto relative"
+              >
+                {/* Close Button */}
+                <button
+                  onClick={() => setSelectedInterview(null)}
+                  className="absolute top-4 right-4 p-2 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors z-10"
+                >
+                  <X size={24} />
+                </button>
+
+                {/* Header */}
+                <div className="bg-gradient-to-r from-champion-gold/10 to-transparent p-8 border-b border-white/5">
+                  <h2 className="text-3xl font-heading font-bold text-white mb-2">
+                    {selectedInterview.role}
+                  </h2>
+                  <div className="flex items-center gap-4 text-gray-400">
+                    <Calendar size={16} />
+                    {new Date(selectedInterview.createdAt).toLocaleDateString()}
+                  </div>
+                </div>
+
+                {/* Score Section */}
+                <div className="p-8">
+                  <div className="grid grid-cols-3 gap-4 mb-8">
+                    <div className="bg-white/5 rounded-lg p-6 text-center border border-white/10">
+                      <div className="text-gray-400 text-xs uppercase tracking-widest mb-2">
+                        Overall Score
+                      </div>
+                      <div
+                        className={`text-4xl font-heading font-bold ${
+                          selectedInterview.score >= 80
+                            ? "text-green-400"
+                            : selectedInterview.score >= 60
+                              ? "text-yellow-400"
+                              : "text-red-400"
+                        }`}
+                      >
+                        {selectedInterview.score}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-2">/100</div>
+                    </div>
+
+                    <div className="bg-white/5 rounded-lg p-6 text-center border border-white/10">
+                      <div className="text-gray-400 text-xs uppercase tracking-widest mb-2">
+                        Grade
+                      </div>
+                      <div className="text-4xl font-heading font-bold text-champion-gold">
+                        {selectedInterview.score >= 90
+                          ? "S"
+                          : selectedInterview.score >= 80
+                            ? "A"
+                            : selectedInterview.score >= 70
+                              ? "B"
+                              : selectedInterview.score >= 60
+                                ? "C"
+                                : "D"}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-2">
+                        {selectedInterview.score >= 90
+                          ? "Excellent"
+                          : selectedInterview.score >= 80
+                            ? "Very Good"
+                            : selectedInterview.score >= 70
+                              ? "Good"
+                              : selectedInterview.score >= 60
+                                ? "Fair"
+                                : "Needs Improvement"}
+                      </div>
+                    </div>
+
+                    <div className="bg-white/5 rounded-lg p-6 text-center border border-white/10">
+                      <div className="text-gray-400 text-xs uppercase tracking-widest mb-2">
+                        Difficulty
+                      </div>
+                      <div className="text-2xl font-heading font-bold text-white">
+                        {selectedInterview.difficulty || "Normal"}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-2">Level</div>
+                    </div>
+                  </div>
+
+                  {/* Feedback Section */}
+                  <div className="bg-white/5 rounded-lg p-6 border border-white/10">
+                    <h3 className="text-champion-gold font-bold uppercase tracking-widest text-sm mb-4">
+                      Performance Feedback
+                    </h3>
+                    <div className="text-gray-300 space-y-3 leading-relaxed whitespace-pre-wrap text-sm">
+                      {selectedInterview.feedback || "No feedback available"}
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-4 mt-8">
+                    <button
+                      onClick={() => {
+                        setSelectedInterview(null);
+                        localStorage.setItem(
+                          "currentSessionId",
+                          selectedInterview.id,
+                        );
+                        navigate("/interview");
+                      }}
+                      className="flex-1 bg-champion-gold text-black font-bold py-3 rounded-lg hover:bg-white transition-colors uppercase tracking-widest text-sm"
+                    >
+                      Review Session
+                    </button>
+                    <button
+                      onClick={() => setSelectedInterview(null)}
+                      className="flex-1 border border-white/10 text-white font-bold py-3 rounded-lg hover:bg-white/5 transition-colors uppercase tracking-widest text-sm"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
