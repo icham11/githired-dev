@@ -229,13 +229,11 @@ const ResumePage = () => {
                     </h3>
                   </div>
 
-                  <div className="prose prose-invert prose-sm max-w-none text-gray-300">
-                    <div className="whitespace-pre-wrap leading-relaxed">
-                      {analysisLang === "id"
-                        ? result.feedback_id ||
-                          "Terjemahan data tidak ditemukan dalam database."
-                        : result.feedback_en || result.feedback}
-                    </div>
+                  <div className="text-gray-300 space-y-2 leading-relaxed whitespace-pre-wrap text-sm font-mono overflow-x-auto max-w-none">
+                    {analysisLang === "id"
+                      ? result.feedback_id ||
+                        "Terjemahan data tidak ditemukan dalam database."
+                      : result.feedback_en || result.feedback}
                   </div>
                 </div>
               </div>
