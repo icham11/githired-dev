@@ -102,7 +102,7 @@ const getHistory = async (req, res, next) => {
     const resumes = await ResumeAnalysis.findAll({
       where: { userId: req.user.id },
       order: [["createdAt", "DESC"]],
-      attributes: ["id", "score", "fileUrl", "createdAt", "feedback"], // Lite attributes
+      attributes: ["id", "score", "fileUrl", "createdAt", "feedback", "feedback_en", "feedback_id"], // Include all feedback fields
     });
 
     const interviews = await InterviewSession.findAll({

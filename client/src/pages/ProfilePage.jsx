@@ -550,7 +550,7 @@ const ProfilePage = () => {
                       Analysis Feedback
                     </h3>
                     <div className="text-gray-300 space-y-3 leading-relaxed whitespace-pre-wrap text-sm">
-                      {selectedResume.feedback || "No feedback available"}
+                      {selectedResume.feedback_en || selectedResume.feedback_id || selectedResume.feedback || "No feedback available"}
                     </div>
                   </div>
 
