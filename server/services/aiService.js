@@ -79,9 +79,101 @@ ${resumeText}
 **OUTPUT FORMAT (STRICT JSON)**:
 {
   "score": <exact number 0-100 based on framework>,
-  "feedback_en": "<Detailed English analysis following the structure: [Score Breakdown] → [Strengths with examples] → [Critical Improvements] → [ATS Optimization] → [Action Plan]>",
-  "feedback_id": "<Same analysis in Indonesian>"
+  "feedback_en": "<Well-formatted English analysis>",
+  "feedback_id": "<Well-formatted Indonesian analysis>"
 }
+
+**FEEDBACK FORMAT** (Use this exact structure with proper spacing and formatting):
+
+═══════════════════════════════════════════════════════
+📊 RESUME SCORE ANALYSIS
+═══════════════════════════════════════════════════════
+
+Overall Score: [XX]/100
+Grade: [Letter Grade - S/A/B/C/D]
+Level: [Elite/Strong/Good/Fair/Weak/Critical]
+
+SCORE BREAKDOWN:
+✓ ATS Compatibility: [XX]/25
+✓ Content Quality: [XX]/35
+✓ Professional Impact: [XX]/25
+✓ Presentation & Polish: [XX]/15
+
+═══════════════════════════════════════════════════════
+✅ KEY STRENGTHS
+═══════════════════════════════════════════════════════
+
+• [Strength 1 with specific example from resume]
+• [Strength 2 with specific example from resume]
+• [Strength 3 with specific example from resume]
+• [Additional strengths if applicable]
+
+═══════════════════════════════════════════════════════
+⚠️ CRITICAL IMPROVEMENTS NEEDED
+═══════════════════════════════════════════════════════
+
+🔴 PRIORITY 1: [Issue]
+   → Impact: [Why this hurts your chances]
+   → Fix: [Specific actionable solution]
+
+🔴 PRIORITY 2: [Issue]
+   → Impact: [Why this hurts your chances]
+   → Fix: [Specific actionable solution]
+
+🔴 PRIORITY 3: [Issue]
+   → Impact: [Why this hurts your chances]
+   → Fix: [Specific actionable solution]
+
+═══════════════════════════════════════════════════════
+🎯 ATS OPTIMIZATION CHECKLIST
+═══════════════════════════════════════════════════════
+
+FORMAT:
+☐ Use standard fonts (Arial, Calibri, Helvetica)
+☐ Remove tables, columns, text boxes, headers/footers
+☐ Use standard section headers (Experience, Education, Skills)
+☐ Keep file as .docx or .pdf (not scanned images)
+
+CONTENT:
+☐ Include 8-12 relevant keywords from target job descriptions
+☐ Use action verbs (Led, Developed, Increased, Achieved)
+☐ Quantify achievements with numbers/percentages
+☐ Keep length to 1-2 pages maximum
+
+IMPACT:
+☐ Show career progression and growth
+☐ Highlight specific technical skills and tools
+☐ Demonstrate problem-solving with examples
+☐ Include measurable results and outcomes
+
+═══════════════════════════════════════════════════════
+📚 ACTION PLAN (Next 48 Hours)
+═══════════════════════════════════════════════════════
+
+IMMEDIATE (Do Today):
+1. [Most urgent fix with specific steps]
+2. [Second most urgent fix]
+3. [Third priority fix]
+
+THIS WEEK:
+• [Medium-term improvement 1]
+• [Medium-term improvement 2]
+• [Additional recommendations]
+
+BEFORE APPLYING:
+✓ [Final check 1]
+✓ [Final check 2]
+✓ [Final validation step]
+
+═══════════════════════════════════════════════════════
+💡 FINAL VERDICT
+═══════════════════════════════════════════════════════
+
+[Honest 2-3 sentence summary of current state and readiness]
+
+[Personalized encouragement and next step recommendation]
+
+Good luck! 🚀
 
 BE BRUTALLY HONEST. Reject generic resumes. Reward quantifiable impact. Reference real ATS filtering criteria.`;
 
