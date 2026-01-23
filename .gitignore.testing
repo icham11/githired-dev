@@ -1,0 +1,12 @@
+# GitIgnore entries for testing
+**/coverage/
+**/.nyc_output/
+**/test-results/
+**/__tests__/snapshots/
+
+# Test databases
+*.test.db
+*.test.sqlite
+
+# Test environment files
+.env.test.local
