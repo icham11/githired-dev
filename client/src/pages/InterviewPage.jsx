@@ -7,6 +7,7 @@ import {
   fetchSession,
   endInterview,
   seedGreeting,
+  clearInterview,
 } from "../store/slices/interviewSlice";
 import Navbar from "../components/Navbar";
 import Button from "../components/Button";
