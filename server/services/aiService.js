@@ -341,30 +341,76 @@ const evaluateInterview = async (chatHistory, role, language = "English") => {
   
   **DETAILED FEEDBACK FORMAT** (in ${language}):
   
-  **[1] TECHNICAL ASSESSMENT**
-  - Strengths: Specific technical competencies shown with chat examples
-  - Gaps: Misconceptions or weak areas with impact analysis
+  Format the feedback with clear sections, proper spacing, and bullet points for readability:
   
-  **[2] COMMUNICATION ASSESSMENT** (NEW - Very Important!)
-  - Clarity Score (0-10): How well did they explain concepts?
-    Example: "8/10 - Explained REST principles clearly with examples, but struggled with OAuth nuances"
-  - Listening/Engagement (0-10): Did they engage genuinely with the interviewer?
-    Example: "6/10 - Asked some clarifying questions, but defensive when corrected"
-  - Presence & Confidence (0-10): Conviction and ownership of ideas?
-    Example: "7/10 - Generally confident, but second-guessed themselves under pressure"
+  ═══════════════════════════════════════════════════════
+  📊 TECHNICAL ASSESSMENT
+  ═══════════════════════════════════════════════════════
   
-  - **Communication Feedback**: Specific observations and improvement areas
-    Example: "You explain architecture well step-by-step, but rush through edge cases. Slow down and use diagrams (even verbal ones) to map trade-offs."
+  ✅ STRENGTHS:
+  • [Specific competency 1 with concrete example from chat]
+  • [Specific competency 2 with concrete example from chat]
+  • [Specific competency 3 if applicable]
   
-  **[3] RECOMMENDED LEARNING PATHS**:
-  - 3-5 technical areas to study
-  - 2-3 communication/presentation skills to work on
+  ⚠️ AREAS FOR IMPROVEMENT:
+  • [Gap 1]: [Brief explanation of misconception and impact]
+  • [Gap 2]: [Brief explanation of weak area and why it matters]
+  • [Gap 3 if applicable]
   
-  **[4] ACTIONABLE NEXT STEPS**:
-  What to practice before next interview (technical + soft skills)
+  ═══════════════════════════════════════════════════════
+  💬 COMMUNICATION ASSESSMENT
+  ═══════════════════════════════════════════════════════
   
-  **[5] FINAL ASSESSMENT**:
-  Honest summary: level, readiness, 30-day improvement plan
+  📌 CLARITY: [Score]/10
+     → [Specific observation with example]
+  
+  📌 LISTENING & ENGAGEMENT: [Score]/10
+     → [Specific observation about question-asking and feedback reception]
+  
+  📌 PRESENCE & CONFIDENCE: [Score]/10
+     → [Specific observation about conviction and ownership]
+  
+  💡 COMMUNICATION FEEDBACK:
+  [Detailed paragraph about communication strengths and specific improvement areas with actionable advice]
+  
+  ═══════════════════════════════════════════════════════
+  📚 RECOMMENDED LEARNING PATHS
+  ═══════════════════════════════════════════════════════
+  
+  🎯 TECHNICAL SKILLS:
+  • [Specific topic 1] - [Why important / Resource suggestion]
+  • [Specific topic 2] - [Why important / Resource suggestion]
+  • [Specific topic 3] - [Why important / Resource suggestion]
+  
+  🎯 COMMUNICATION SKILLS:
+  • [Skill 1] - [Practical exercise suggestion]
+  • [Skill 2] - [Practical exercise suggestion]
+  
+  ═══════════════════════════════════════════════════════
+  🎬 ACTIONABLE NEXT STEPS
+  ═══════════════════════════════════════════════════════
+  
+  BEFORE YOUR NEXT INTERVIEW:
+  
+  ✓ [Immediate action 1 - technical]
+  ✓ [Immediate action 2 - technical]
+  ✓ [Immediate action 3 - communication/soft skill]
+  ✓ [Immediate action 4 - practice suggestion]
+  
+  ═══════════════════════════════════════════════════════
+  🎯 FINAL ASSESSMENT
+  ═══════════════════════════════════════════════════════
+  
+  CURRENT LEVEL: [Assessment of level]
+  READINESS: [Honest assessment of interview readiness]
+  
+  30-DAY IMPROVEMENT PLAN:
+  • Week 1: [Focus area]
+  • Week 2: [Focus area]
+  • Week 3: [Focus area]
+  • Week 4: [Focus area]
+  
+  Keep improving! 🚀
   
   Return ONLY a JSON object with this structure:
   {
