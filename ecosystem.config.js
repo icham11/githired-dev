@@ -1,29 +1,20 @@
 module.exports = {
   apps: [
     {
-      // Backend Server
-      name: "githire-server",
-      script: "./app.js",
-      cwd: "./server",
+      name: "githired-server",
+      script: "app.js",
       instances: 1,
-      exec_mode: "cluster",
-      env: {
-        NODE_ENV: "production",
-        PORT: 3000,
-      },
-      env_development: {
-        NODE_ENV: "development",
-        PORT: 3000,
-      },
-      error_file: "../logs/server-error.log",
-      out_file: "../logs/server-out.log",
-      log_file: "../logs/server-combined.log",
-      time: true,
-      merge_logs: true,
       autorestart: true,
+      watch: false,
       max_memory_restart: "1G",
-      watch: ["."],
-      ignore_watch: ["node_modules", "logs", "coverage"],
+
+      // Config untuk Production
+      env_production: {
+        NODE_ENV: "production",
+        PORT: 3001,
+        DATABASE_URL:
+          "postgresql://postgres:DkwkMdkGzfJqhUXlPzrA0ppxFHTcoLPy@caboose.proxy.rlwy.net:56894/railway",
+      },
     },
   ],
 };
